@@ -1,25 +1,14 @@
-import { TableModel } from '@pind/ddd-core'
-import { ElTable, ElTableColumn } from 'element-plus'
-import { PropType, computed, defineComponent, inject } from 'vue'
-import { TableInjectionKey } from '../../contexts'
-import { mergeProps } from '../../utils'
+import { ElButton, ElTable, ElTableColumn } from 'element-plus'
+import { defineComponent } from 'vue'
+import { useTableModel } from '../../hooks'
 
 export const DTable = defineComponent({
   name: 'DTable',
-  props: mergeProps(ElTable, {
-    model: {
-      type: Object as PropType<TableModel>,
-      default: () => ({})
-    }
-  }),
-  setup(props) {
-    inject(
-      TableInjectionKey,
-      computed(() => props.model)
-    )
+  setup() {
+    const tableModelRef = useTableModel()
 
     function renderCloumns() {
-      const { model: tableModel } = props
+      const tableModel = tableModelRef.value
       const { columns } = tableModel
       return columns.map((column) => {
         const { render, dataIndex, title, slots, ...columnProps } = column
@@ -43,12 +32,46 @@ export const DTable = defineComponent({
       })
     }
 
-    return () => {
-      const { model: tableModel, ...tableProps } = props as any
+    function renderActions() {
+      const tableModel = tableModelRef.value
       return (
-        <ElTable {...tableProps} data={tableModel.list}>
+        <ElTableColumn prop="_action" label="操作">
+          {{
+            default: ({ row, $index }: any) => {
+              const { actions } = tableModel
+
+              return actions.map((action) => {
+                const { render, onClick, auth, text, type, ...actionProps } = action
+                if (typeof auth === 'function' && auth(row) === false) return null
+                const allActionProps = {
+                  ...actionProps,
+                  onClick: () => {
+                    if (typeof onClick === 'function') {
+                      onClick(row, $index)
+                    }
+                  }
+                }
+                if (typeof render === 'function') {
+                  return render(row, $index)
+                }
+                return (
+                  <ElButton {...allActionProps} key={type}>
+                    {text}
+                  </ElButton>
+                )
+              })
+            }
+          }}
+        </ElTableColumn>
+      )
+    }
+
+    return () => {
+      const tableModel = tableModelRef.value
+      return (
+        <ElTable data={tableModel.list}>
           {renderCloumns()}
-          <div></div>
+          {renderActions()}
         </ElTable>
       )
     }

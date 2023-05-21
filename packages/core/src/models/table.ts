@@ -1,10 +1,7 @@
-import { Columns, Pagination, SearchResult, Column } from '../types'
+import { Columns, Pagination, SearchResult, Actions, Auths, Action } from '../types'
 import { Form, IFormProps, createForm } from '@formily/core'
 import { Schema } from '@formily/json-schema'
-
-export interface IColumn<T> extends Omit<Column, 'render'> {
-  render?: string | ((text: any, record: T, index: number) => any)
-}
+import { action, define, observable } from '@formily/reactive'
 
 export interface TableValues<Row, SearchParams, AddParams = Row, EditParams = AddParams> {
   searchParams: SearchParams
@@ -21,7 +18,8 @@ export interface TableOptions<
 > {
   columns?: Columns<Row>
   pagination?: Partial<Pagination>
-
+  actions?: Actions<Row>
+  auths?: Auths<Row>
   form?: Form<TableValues<Row, SearchParams, AddParams, EditParams>>
   formProps?: IFormProps
   /**
@@ -73,33 +71,67 @@ export class TableModel<
 
   form: Form<TableValues<Row, SearchParams, AddParams, EditParams>>
 
-  get columns(): IColumn<Row>[] {
+  get columns() {
     const columns = this.options.columns || []
-    return columns.map<IColumn<Row>>((column) => {
-      const _column = { ...column }
-      const render = column.render
-      if (!render) return _column as IColumn<Row>
+    return this.compile(columns)
+  }
 
-      let renderFn!: Function
-      if (typeof render === 'string') {
-        const renderStr = render
-        renderFn = Schema.compile(renderStr, {
-          $form: this.form,
-          $table: this
-        })
-      }
-      if (typeof render === 'function') {
-        renderFn = render
-      }
-
-      if (typeof renderFn === 'function') {
-        column.render = (text: any, record: Row, index: number) => {
-          return renderFn(text, record, index, this)
+  get actions() {
+    const actions = this.compile(this.options.actions || [])
+    const hasDelAction = actions.some((action) => action.type === 'del')
+    const hasEditAction = actions.some((action) => action.type === 'edit')
+    const allActions = actions.map<Action<Row>>((action) => {
+      const { auth } = action
+      return {
+        ...action,
+        auth: (row) => {
+          if (typeof auth === 'function') {
+            return auth(row)
+          }
+          return auth === undefined ? true : auth
         }
       }
-
-      return _column as IColumn<Row>
     })
+    if (!hasDelAction) {
+      allActions.unshift({
+        type: 'del',
+        text: '删除',
+        loading: this.editing,
+        auth: (row) => {
+          return this.auth('del', row)
+        },
+        onClick: (row) => {
+          this.toDel(row)
+        }
+      })
+    }
+    if (!hasEditAction) {
+      allActions.unshift({
+        type: 'edit',
+        text: '编辑',
+        loading: this.editing,
+        auth: (row) => {
+          return this.auth('edit', row)
+        },
+        onClick: (row) => {
+          this.toEdit(row)
+        }
+      })
+    }
+    return allActions
+  }
+
+  get auths() {
+    const auths = this.options.auths || {}
+    return this.compile(auths)
+  }
+
+  auth(type: string, record: Row) {
+    const auth = this.auths[type]
+    if (typeof auth === 'function') {
+      return auth(record)
+    }
+    return auth
   }
 
   get list(): Row[] {
@@ -218,7 +250,7 @@ export class TableModel<
    */
   searching = false
 
-  async search() {
+  search = async () => {
     const { onSearch } = this.options
     if (typeof onSearch === 'function') {
       try {
@@ -232,5 +264,32 @@ export class TableModel<
         this.searching = false
       }
     }
+  }
+
+  compile<T>(source: T): T {
+    return Schema.compile(source, {
+      $form: this.form,
+      $table: this
+    })
+  }
+
+  protected makeObservable() {
+    define(this, {
+      pagination: observable,
+      isAdding: observable.ref,
+      adding: observable.ref,
+      isEditing: observable.ref,
+      editing: observable.ref,
+      searching: observable.ref,
+      compile: action.bound,
+      search: action.bound,
+      setPagination: action.bound,
+      toAdd: action.bound,
+      add: action.bound,
+      toDel: action.bound,
+      del: action.bound,
+      toEdit: action.bound,
+      edit: action.bound
+    })
   }
 }

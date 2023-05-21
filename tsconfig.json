@@ -9,14 +9,14 @@
     "noUnusedLocals": true,
     "preserveConstEnums": true,
     "sourceMap": false,
-    "declaration": true,
+    "declaration": false,
     "skipLibCheck": true,
     "experimentalDecorators": true,
     "strictNullChecks": true,
     "downlevelIteration": true,
     "baseUrl": ".",
     "paths": {
-      "@pind/ddd-*": ["./packages/*/src"],
+      "@pind/ddd-*": ["./packages/*/src"]
     },
     "lib": ["DOm", "DOM.Iterable"]
   }
