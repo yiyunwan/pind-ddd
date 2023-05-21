@@ -1,0 +1,23 @@
+{
+  "compilerOptions": {
+    "esModuleInterop": true,
+    "moduleResolution": "node",
+    "jsx": "preserve",
+    "module": "commonjs",
+    "target": "es5",
+    "allowJs": false,
+    "noUnusedLocals": true,
+    "preserveConstEnums": true,
+    "sourceMap": false,
+    "declaration": true,
+    "skipLibCheck": true,
+    "experimentalDecorators": true,
+    "strictNullChecks": true,
+    "downlevelIteration": true,
+    "baseUrl": ".",
+    "paths": {
+      "@pind/ddd-*": ["./packages/*/src"],
+    },
+    "lib": ["DOm", "DOM.Iterable"]
+  }
+}

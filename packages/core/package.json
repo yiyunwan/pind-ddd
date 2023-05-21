@@ -1,0 +1,11 @@
+{
+  "name": "@pind/ddd-core",
+  "version": "0.0.1",
+  "description": "DDD Core",
+  "dependencies": {
+    "@formily/core": "^2.2.0",
+    "@formily/json-schema": "^2.2.0",
+    "@formily/reactive": "^2.2.0",
+    "@formily/shared": "^2.2.0"
+  }
+}
