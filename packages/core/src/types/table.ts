@@ -32,4 +32,4 @@ export type Actions<T> = Action<T>[]
 
 export type Auth<Row> = boolean | ((record: Row) => boolean)
 
-export type Auths<Row> = Record<'add' | 'edit' | 'del' | (string & {}), Auth<Row>>
+export type AuthMap<Row> = Record<'add' | 'edit' | 'del' | (string & {}), Auth<Row>>

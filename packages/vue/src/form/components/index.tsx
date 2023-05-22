@@ -1,1 +1,1 @@
-export { Input, Select } from '@formily/element-plus'
+export { Input, Select, Submit } from '@formily/element-plus'

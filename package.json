@@ -4,6 +4,9 @@
   "private": true,
   "scripts": {},
   "dependencies": {},
+  "workspaces": [
+    "packages/*"
+  ],
   "devDependencies": {
     "@rushstack/eslint-patch": "^1.2.0",
     "@tsconfig/node18": "^2.0.1",

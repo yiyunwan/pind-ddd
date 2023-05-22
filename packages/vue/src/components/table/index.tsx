@@ -1,12 +1,12 @@
-import { PropType, computed, defineComponent, inject, watch } from 'vue'
-import { TableInjectionKey } from '../../contexts'
-import { TableModel } from '@pind/ddd-core'
-import type { ISchema } from '@formily/json-schema'
-import '@formily/json-schema'
 import { Form } from '@formily/element-plus'
+import '@formily/json-schema'
+import type { ISchema } from '@formily/json-schema'
+import { TableModel } from '@pind/ddd-core'
+import { ElDrawer } from 'element-plus'
+import { PropType, computed, defineComponent, provide, watch } from 'vue'
+import { TableInjectionKey } from '../../contexts'
 import { SchemaField } from '../../form'
 import { DTable } from './Table'
-import { ElDrawer } from 'element-plus'
 
 export const CrudTable = defineComponent({
   name: 'CrudTable',
@@ -17,19 +17,22 @@ export const CrudTable = defineComponent({
     },
     search: {
       type: Object as PropType<ISchema>,
-      required: true
+      default: () => ({})
     },
     add: {
       type: Object as PropType<ISchema>,
-      required: true
+      default: () => ({})
     },
     edit: {
       type: Object as PropType<ISchema>,
-      required: true
+      default: () => ({})
     }
   },
   setup(props) {
-    inject(TableInjectionKey)
+    provide(
+      TableInjectionKey,
+      computed(() => props.model)
+    )
 
     const schema = computed<ISchema>(() => {
       return {

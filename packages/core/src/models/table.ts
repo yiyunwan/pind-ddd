@@ -1,4 +1,4 @@
-import { Columns, Pagination, SearchResult, Actions, Auths, Action } from '../types'
+import { Columns, Pagination, SearchResult, Actions, Action, AuthMap } from '../types'
 import { Form, IFormProps, createForm } from '@formily/core'
 import { Schema } from '@formily/json-schema'
 import { action, define, observable } from '@formily/reactive'
@@ -19,7 +19,7 @@ export interface TableOptions<
   columns?: Columns<Row>
   pagination?: Partial<Pagination>
   actions?: Actions<Row>
-  auths?: Auths<Row>
+  authMap?: AuthMap<Row>
   form?: Form<TableValues<Row, SearchParams, AddParams, EditParams>>
   formProps?: IFormProps
   /**
@@ -121,13 +121,12 @@ export class TableModel<
     return allActions
   }
 
-  get auths() {
-    const auths = this.options.auths || {}
-    return this.compile(auths)
+  get authMap() {
+    return this.compile(this.options.authMap || {})
   }
 
   auth(type: string, record: Row) {
-    const auth = this.auths[type]
+    const auth = this.authMap[type]
     if (typeof auth === 'function') {
       return auth(record)
     }

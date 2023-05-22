@@ -7,7 +7,7 @@ export const DTable = defineComponent({
   setup() {
     const tableModelRef = useTableModel()
 
-    function renderCloumns() {
+    function renderColumns() {
       const tableModel = tableModelRef.value
       const { columns } = tableModel
       return columns.map((column) => {
@@ -70,7 +70,7 @@ export const DTable = defineComponent({
       const tableModel = tableModelRef.value
       return (
         <ElTable data={tableModel.list}>
-          {renderCloumns()}
+          {renderColumns()}
           {renderActions()}
         </ElTable>
       )
