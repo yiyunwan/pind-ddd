@@ -164,7 +164,14 @@ export const AddForm = observer(
       return () => {
         return (
           <DrawerForm type="add" onSubmit={onSubmit}>
-            <BaseForm {...props} form={formRef.value}>
+            <BaseForm
+              {...props}
+              form={formRef.value}
+              scope={{
+                ...props.scope,
+                $type: 'add'
+              }}
+            >
               {slots.default?.()}
             </BaseForm>
           </DrawerForm>
@@ -194,7 +201,14 @@ export const EditForm = observer(
       return () => {
         return (
           <DrawerForm type="edit" onSubmit={onSubmit}>
-            <BaseForm {...props} form={formRef.value}>
+            <BaseForm
+              {...props}
+              form={formRef.value}
+              scope={{
+                ...props.scope,
+                $type: 'edit'
+              }}
+            >
               {slots.default?.()}
             </BaseForm>
           </DrawerForm>
