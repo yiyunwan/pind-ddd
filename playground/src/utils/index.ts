@@ -1,2 +1,1 @@
-export {}
-export * from './define'
+export * from './promise'

@@ -3,7 +3,6 @@
   "version": "0.0.1",
   "description": "DDD Core",
   "scripts": {},
-  "types": "lib/index.d.ts",
   "dependencies": {
     "vue": "^3.3.0",
     "@formily/core": "^2.2.0",

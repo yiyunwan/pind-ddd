@@ -1,7 +1,18 @@
-import { Columns, Pagination, SearchResult, Actions, Action, AuthMap } from '../types'
-import { Form, IFormProps, createForm } from '@formily/core'
-import { Schema } from '@formily/json-schema'
+import { Form, IFormMergeStrategy, createForm } from '@formily/core'
+import { Schema, Stringify } from '@formily/json-schema'
 import { action, define, observable } from '@formily/reactive'
+import { clone, merge } from '@formily/shared'
+import {
+  Action,
+  ActionFn,
+  Actions,
+  AuthMap,
+  Column,
+  Columns,
+  FormProps,
+  OnSearchFn,
+  Pagination
+} from '../types'
 
 export interface TableValues<Row, SearchParams, AddParams = Row, EditParams = AddParams> {
   searchParams: SearchParams
@@ -13,71 +24,131 @@ export interface TableValues<Row, SearchParams, AddParams = Row, EditParams = Ad
 export interface TableOptions<
   Row extends object,
   SearchParams extends object = object,
-  AddParams = Row,
-  EditParams = AddParams
+  AddParams extends object = Row,
+  EditParams extends object = AddParams
 > {
-  columns?: Columns<Row>
   pagination?: Partial<Pagination>
-  actions?: Actions<Row>
-  authMap?: AuthMap<Row>
-  form?: Form<TableValues<Row, SearchParams, AddParams, EditParams>>
-  formProps?: IFormProps
+  actions?: Stringify<Actions<Row>>
+  authMap?: Stringify<AuthMap<Row>>
+  formProps?: FormProps<SearchParams, AddParams, EditParams>
   /**
    * @description 添加事件完成的回调
    * 返回 true 时，会自动刷新表格
    * 返回 false 时，不会自动刷新表格, 也不会关闭弹窗，需要手动关闭
    */
-  onAdd?: (value: AddParams) => Promise<boolean>
+  onAdd?: ActionFn<AddParams>
   /**
    * @description 删除事件回调
    * 返回 true 时，会自动刷新表格
-   * 返回 false 时，不会自动刷新表格, 可以设置 _deleting 字段来标记删除中
+   * 返回 false 时，不会自动刷新表格, 可以设置 __deleting__ 字段来标记删除中
    */
-  onDel?: (
-    value: Row & {
-      _deleting?: boolean
+  onDelete?: ActionFn<
+    Row & {
+      ___deleting____?: boolean
     }
-  ) => Promise<boolean>
+  >
+
   /**
    * @description 编辑事件完成的回调
    * 返回 true 时，会自动刷新表格
    * 返回 false 时，不会自动刷新表格, 也不会关闭弹窗，需要手动关闭
    */
-  onEdit?: (value: EditParams) => Promise<boolean>
+  onEdit?: ActionFn<EditParams>
   /**
    * 查
    * @description 搜索事件按钮的回调
    * 返回 false 时，不会自动刷新表格
    */
-  onSearch?: (params: any) => Promise<SearchResult<Row> | false>
+  onSearch?: OnSearchFn<SearchParams, Row>
 }
 
 export class TableModel<
-  Row extends object = object,
-  SearchParams extends object = object,
-  AddParams = Row,
-  EditParams = AddParams
+  Row extends object = any,
+  SearchParams extends object = any,
+  AddParams extends object = Row,
+  EditParams extends object = AddParams
 > {
   options: TableOptions<Row, SearchParams, AddParams, EditParams>
 
-  constructor(options: TableOptions<Row, SearchParams, AddParams, EditParams>) {
+  constructor(
+    columns: Stringify<Columns<Row>> = [],
+    options: TableOptions<Row, SearchParams, AddParams, EditParams> = {}
+  ) {
     this.options = options
-    this.setForm(options.form || createForm(options.formProps))
+    this.setColumns(columns)
+    this.setPagination(options.pagination)
+    this.searchForm = createForm(options.formProps?.search)
+    this.addForm = createForm(options.formProps?.add)
+    this.editForm = createForm(options.formProps?.edit)
+    this.makeObservable()
   }
 
-  setForm(form: Form) {
-    this.form = form
+  private _columns?: Stringify<Columns<Row>>
+
+  setColumns(columns: Stringify<Columns<Row>>) {
+    this._columns = clone(columns)
   }
 
-  form: Form<TableValues<Row, SearchParams, AddParams, EditParams>>
+  setColumn(column: Column<Row>, strategy: IFormMergeStrategy = 'merge') {
+    const _columns = this._columns
+    if (Array.isArray(_columns) && typeof column === 'object') {
+      const index = _columns.findIndex((item) => {
+        if (typeof item === 'object') {
+          return item.key === column.key
+        }
+        return false
+      })
+      if (index > -1) {
+        const result = _columns[index]
+        const old = typeof result === 'object' ? result : {}
+        switch (strategy) {
+          case 'merge':
+          case 'deepMerge':
+            _columns[index] = merge(old, column)
+            break
+          case 'shallowMerge':
+            _columns[index] = Object.assign(old, column)
+            break
+          case 'overwrite':
+            _columns[index] = column
+            break
+        }
+      } else {
+        _columns.push(column)
+      }
+    }
+    this._columns = clone(column)
+  }
 
-  get columns() {
-    const columns = this.options.columns || []
-    return this.compile(columns)
+  get columns(): Columns<Row> {
+    const columns = this._columns || []
+    if (typeof columns === 'string') {
+      return this.compile(columns, {
+        $column: {},
+        $columns: []
+      })
+    } else if (Array.isArray(columns)) {
+      return columns
+        .map((column) => {
+          if (typeof column === 'string') {
+            return this.compile(column, {
+              $column: {},
+              $columns: columns
+            })
+          } else if (typeof column === 'object') {
+            return this.compile(column, {
+              $column: column,
+              $columns: columns
+            })
+          }
+        })
+        .filter(Boolean) as Columns<Row>
+    }
+    return []
   }
 
   get actions() {
-    const actions = this.compile(this.options.actions || [])
+    const actions = this.compile(this.options.actions || []) as Actions<Row>
     const hasDelAction = actions.some((action) => action.type === 'del')
     const hasEditAction = actions.some((action) => action.type === 'edit')
     const allActions = actions.map<Action<Row>>((action) => {
@@ -101,7 +172,7 @@ export class TableModel<
           return this.auth('del', row)
         },
         onClick: (row) => {
-          this.toDel(row)
+          this.delete(row)
         }
       })
     }
@@ -121,6 +192,9 @@ export class TableModel<
     return allActions
   }
 
+  /**
+   * 权限相关
+   */
   get authMap() {
     return this.compile(this.options.authMap || {})
   }
@@ -133,17 +207,27 @@ export class TableModel<
     return auth
   }
 
-  get list(): Row[] {
-    const { list } = this.form.values
-    return list
-  }
-
+  searchForm: Form<SearchParams>
   get searchParams(): SearchParams {
-    const { searchParams } = this.form.values
+    const searchParams = this.searchForm.values
     return searchParams
   }
 
-  setPagination(pagination?: Partial<Pagination>) {
+  addForm: Form<AddParams>
+  get addParams(): AddParams {
+    const addParams = this.addForm.values
+    return addParams
+  }
+
+  editForm: Form<EditParams>
+  get editParams(): EditParams {
+    const editParams = this.editForm.values
+    return editParams
+  }
+
+  list: Row[] = []
+
+  setPagination(pagination: Partial<Pagination> = {}) {
     this.pagination = {
       total: 0,
       page: 1,
@@ -154,10 +238,7 @@ export class TableModel<
 
   pagination: Pagination
 
-  get addParams(): AddParams {
-    const { addParams } = this.form.values
-    return addParams
-  }
+  /** ---表格模型增相关逻辑 START--- */
   /**
    * 是否正在添加
    */
@@ -170,7 +251,7 @@ export class TableModel<
 
   toAdd() {
     this.isAdding = true
-    this.form.setValuesIn('addParams', {})
+    this.addForm.reset()
   }
 
   async add() {
@@ -188,39 +269,39 @@ export class TableModel<
       this.adding = false
     }
   }
+  /** ---表格模型【增】相关逻辑 END--- */
 
-  toDel(row: Row & { _deleting?: boolean }) {
-    this.form.setValuesIn('delParams', row)
-  }
-
-  async del(
+  /** ---表格模型【删】相关逻辑 START--- */
+  async delete(
     row: Row & {
-      _deleting?: boolean
+      __deleting__?: boolean
     }
   ) {
-    const { onDel } = this.options
-    if (row._deleting) return
-    if (typeof onDel !== 'function') return
+    const { onDelete } = this.options
+    if (row.__deleting__) return
+    if (typeof onDelete !== 'function') return
     try {
-      row._deleting = true
-      const result = await onDel(row)
+      row.__deleting__ = true
+      const result = await onDelete(row)
       if (result) {
         this.search()
       }
     } finally {
-      row._deleting = false
+      row.__deleting__ = false
     }
   }
+  /** ---表格模型【删】相关逻辑 END--- */
 
-  toEdit(row: Row) {
-    this.isEditing = true
-    this.form.setValuesIn('editParams', row)
-  }
-
+  /** ---表格模型【改】相关逻辑 START--- */
   /**
    * 是否正在编辑
    */
   isEditing = false
+
+  toEdit(row: Row) {
+    this.isEditing = true
+    this.editForm.setValues(row)
+  }
 
   /**
    * 正在上传编辑数据
@@ -232,7 +313,7 @@ export class TableModel<
     const { onEdit } = this.options
     if (typeof onEdit !== 'function') return
     try {
-      const { editParams } = this.form.values
+      const { editParams } = this
       this.editing = true
       const result = await onEdit(editParams)
       if (result) {
@@ -243,7 +324,9 @@ export class TableModel<
       this.editing = false
     }
   }
+  /** ---表格模型【改】相关逻辑 END--- */
 
+  /** ---表格模型【查】相关逻辑 START--- */
   /**
    * 正在搜索
    */
@@ -254,20 +337,26 @@ export class TableModel<
     if (typeof onSearch === 'function') {
       try {
         this.searching = true
-        const result = await onSearch(this.searchParams)
-        if (result === false) return
+        const result = await onSearch(this.searchParams, this.pagination)
+        if (!result) return
         const { list, pagination } = result
-        this.form.setValuesIn('list', list)
+        console.log('list', list)
+        this.list = list
         this.setPagination(pagination)
       } finally {
         this.searching = false
       }
     }
   }
+  /** ---表格模型【查】相关逻辑 END--- */
 
-  compile<T>(source: T): T {
+  compile<
+    T extends {
+      [key: string]: any
+    }
+  >(source: Stringify<T>, scope = {}): T {
     return Schema.compile(source, {
-      $form: this.form,
+      ...scope,
       $table: this
     })
   }
@@ -276,7 +365,11 @@ export class TableModel<
     define(this, {
       pagination: observable,
       isAdding: observable.ref,
+      searchForm: observable.ref,
+      addForm: observable.ref,
+      editForm: observable.ref,
       adding: observable.ref,
+      list: observable.ref,
       isEditing: observable.ref,
       editing: observable.ref,
       searching: observable.ref,
@@ -285,10 +378,21 @@ export class TableModel<
       setPagination: action.bound,
       toAdd: action.bound,
       add: action.bound,
-      toDel: action.bound,
-      del: action.bound,
+      delete: action.bound,
       toEdit: action.bound,
       edit: action.bound
     })
   }
+}
+
+export function createTableModel<
+  Row extends object = any,
+  SearchParams extends object = any,
+  AddParams extends object = Row,
+  EditParams extends object = AddParams
+>(
+  columns: Stringify<Columns<Row>> = [],
+  options: TableOptions<Row, SearchParams, AddParams, EditParams> = {}
+) {
+  return new TableModel(columns, options)
 }

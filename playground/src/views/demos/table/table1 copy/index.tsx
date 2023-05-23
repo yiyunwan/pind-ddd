@@ -1,18 +1,14 @@
-import { TableModel } from '@pind/ddd-core'
+import { TableModel, type StringifyColumns } from '@pind/ddd-core'
 import { CrudTable } from '@pind/ddd-vue'
 import { defineComponent } from 'vue'
+import type { Table1Row } from './type'
+
+const clomuns: StringifyColumns<Table1Row> = []
 
 export const TestTable = defineComponent({
   setup() {
-    const crudTable = new TableModel({
-      columns: [
-        {
-          title: 'ID',
-          dataIndex: 'id'
-        }
-      ],
+    const crudTable = new TableModel(clomuns, {
       onSearch: async () => {
-        console.log('search')
         return {
           list: [
             {
