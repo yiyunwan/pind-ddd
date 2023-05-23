@@ -1,4 +1,4 @@
-import { computed, defineComponent } from 'vue'
+import { PropType, computed, defineComponent } from 'vue'
 import { SchemaForm, SchemaFormProps } from '../../form'
 import { useTableModel } from '../../hooks'
 import { observer } from '@formily/reactive-vue'
@@ -65,6 +65,86 @@ export const SearchForm = observer(
   })
 )
 
+export const DrawerFooter = observer(
+  defineComponent({
+    name: 'DrawerFooter',
+    props: {
+      type: {
+        type: String as PropType<'add' | 'edit'>
+      },
+      onSubmit: {
+        type: Function as PropType<(values: any) => void>
+      }
+    },
+    setup(props) {
+      const modelRef = useTableModel()
+      const onCancel = () => {
+        const model = modelRef.value
+        if (props.type === 'add') {
+          model.isAdding = false
+        } else {
+          model.isEditing = false
+        }
+      }
+
+      return () => {
+        const model = modelRef.value
+        const loading = props.type === 'add' ? model.adding : model.editing
+        return (
+          <div class="flex justify-end">
+            <ElButton onClick={onCancel}>取消</ElButton>
+            <ElButton type="primary" onClick={props.onSubmit} loading={loading}>
+              保存
+            </ElButton>
+          </div>
+        )
+      }
+    }
+  })
+)
+
+export const DrawerForm = observer(
+  defineComponent({
+    name: 'DrawerForm',
+    props: {
+      type: {
+        type: String as PropType<'add' | 'edit'>,
+        default: 'add'
+      },
+      onSubmit: {
+        type: Function as PropType<(values: any) => void>
+      }
+    },
+    setup(props, { slots }) {
+      const modelRef = useTableModel()
+
+      const renderFooter = () => {
+        return <DrawerFooter onSubmit={props.onSubmit} type={props.type}></DrawerFooter>
+      }
+
+      const onClosed = () => {
+        const model = modelRef.value
+        if (props.type === 'add') {
+          model.isAdding = false
+        } else {
+          model.isEditing = false
+        }
+      }
+
+      return () => {
+        const model = modelRef.value
+        const open = props.type === 'add' ? model.isAdding : model.isEditing
+
+        return (
+          <ElDrawer modelValue={open} onClosed={onClosed}>
+            {{ footer: renderFooter, ...slots }}
+          </ElDrawer>
+        )
+      }
+    }
+  })
+)
+
 export const AddForm = observer(
   defineComponent({
     name: 'AddForm',
@@ -82,33 +162,12 @@ export const AddForm = observer(
       }
 
       return () => {
-        const model = modelRef.value
-        const renderDefault = () => {
-          return (
+        return (
+          <DrawerForm type="add" onSubmit={onSubmit}>
             <BaseForm {...props} form={formRef.value}>
               {slots.default?.()}
             </BaseForm>
-          )
-        }
-        const renderFooter = () => {
-          return (
-            <div class="flex justify-end">
-              <ElButton onClick={() => (model.isAdding = false)}>取消</ElButton>
-              <ElButton type="primary" onClick={onSubmit}>
-                保存
-              </ElButton>
-            </div>
-          )
-        }
-        return (
-          <ElDrawer
-            modelValue={model.isAdding}
-            onClosed={() => {
-              model.isAdding = false
-            }}
-          >
-            {{ footer: renderFooter, ...slots, default: renderDefault }}
-          </ElDrawer>
+          </DrawerForm>
         )
       }
     }
@@ -133,33 +192,12 @@ export const EditForm = observer(
       }
 
       return () => {
-        const model = modelRef.value
-        const renderDefault = () => {
-          return (
+        return (
+          <DrawerForm type="edit" onSubmit={onSubmit}>
             <BaseForm {...props} form={formRef.value}>
               {slots.default?.()}
             </BaseForm>
-          )
-        }
-        const renderFooter = () => {
-          return (
-            <div class="flex justify-end">
-              <ElButton onClick={() => (model.isEditing = false)}>取消</ElButton>
-              <ElButton type="primary" onClick={onSubmit}>
-                保存
-              </ElButton>
-            </div>
-          )
-        }
-        return (
-          <ElDrawer
-            modelValue={model.isEditing}
-            onClosed={() => {
-              model.isEditing = false
-            }}
-          >
-            {{ footer: renderFooter, ...slots, default: renderDefault }}
-          </ElDrawer>
+          </DrawerForm>
         )
       }
     }

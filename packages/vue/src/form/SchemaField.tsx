@@ -39,7 +39,6 @@ export const SchemaForm = defineComponent({
       return props.form || createForm()
     })
     return () => {
-      console.log('SchemaForm', props.scope)
       return (
         <ElForm {...props.layout} form={formRef.value} onAutoSubmit={props.onSubmit}>
           <SchemaField schema={props.schema} scope={props.scope} components={props.components} />

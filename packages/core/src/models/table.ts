@@ -42,11 +42,7 @@ export interface TableOptions<
    * 返回 true 时，会自动刷新表格
    * 返回 false 时，不会自动刷新表格, 可以设置 __deleting__ 字段来标记删除中
    */
-  onDelete?: ActionFn<
-    Row & {
-      ___deleting____?: boolean
-    }
-  >
+  onDelete?: ActionFn<Row & ActionContext>
 
   /**
    * @description 编辑事件完成的回调
@@ -60,6 +56,10 @@ export interface TableOptions<
    * 返回 false 时，不会自动刷新表格
    */
   onSearch?: OnSearchFn<SearchParams, Row>
+}
+
+export interface ActionContext {
+  ___deleting____?: boolean
 }
 
 export class TableModel<
@@ -167,7 +167,6 @@ export class TableModel<
       allActions.unshift({
         type: 'del',
         text: '删除',
-        loading: this.editing,
         auth: (row) => {
           return this.auth('del', row)
         },
@@ -180,7 +179,6 @@ export class TableModel<
       allActions.unshift({
         type: 'edit',
         text: '编辑',
-        loading: this.editing,
         auth: (row) => {
           return this.auth('edit', row)
         },
@@ -225,7 +223,7 @@ export class TableModel<
     return editParams
   }
 
-  list: Row[] = []
+  list: (Row & ActionContext)[] = []
 
   setPagination(pagination: Partial<Pagination> = {}) {
     this.pagination = {

@@ -73,9 +73,8 @@ export const DataTable = observer(
 
       return () => {
         const tableModel = tableModelRef.value
-        console.log('tableModel', tableModel.list)
         return (
-          <ElTable data={[...tableModel.list]}>
+          <ElTable data={tableModel.list.slice()}>
             {renderColumns()}
             {renderActions()}
           </ElTable>

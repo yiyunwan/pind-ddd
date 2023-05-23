@@ -34,7 +34,6 @@ export const Table1 = defineComponent({
         return data
       },
       onAdd: async (params) => {
-        console.log('onAdd', params)
         const { code, msg } = await add(params)
         if (code !== 200) {
           ElMessage.error(msg)

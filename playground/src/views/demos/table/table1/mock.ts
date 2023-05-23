@@ -15,7 +15,7 @@ const database = [
 let id = database.length + 1
 
 export async function add(data: Table1AddParams) {
-  await sleep(1000)
+  await sleep(1500)
   const { name } = data
   database.push({
     id: ++id,
@@ -29,7 +29,7 @@ export async function add(data: Table1AddParams) {
 }
 
 export async function edit(data: Table1EditParams) {
-  await sleep(1000)
+  await sleep(1500)
   const { id, name } = data
   const index = database.findIndex((item) => item.id === id)
   if (index > -1) {
@@ -51,7 +51,7 @@ export async function edit(data: Table1EditParams) {
 }
 
 export async function del(id: number) {
-  await sleep(1000)
+  await sleep(1500)
   const index = database.findIndex((item) => item.id === id)
   if (index > -1) {
     database.splice(index, 1)
@@ -68,6 +68,7 @@ export async function del(id: number) {
 }
 
 export async function search(params: Table1ListParams) {
+  await sleep(1500)
   const { page = 1, pageSize = 10, name = '' } = params
   const list = database
     .filter((item) => {
@@ -82,7 +83,6 @@ export async function search(params: Table1ListParams) {
       pageSize
     }
   }
-  console.log(data)
   return {
     code: 200,
     msg: 'success',

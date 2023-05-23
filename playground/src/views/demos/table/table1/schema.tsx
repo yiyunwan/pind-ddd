@@ -17,7 +17,8 @@ export const SearchSchema: ISchema = {
       'x-decorator': 'FormItem',
       'x-component': 'Submit',
       'x-component-props': {
-        type: 'primary'
+        type: 'primary',
+        loading: '{{ $table.searching }}'
       },
       'x-content': '搜索'
     },
