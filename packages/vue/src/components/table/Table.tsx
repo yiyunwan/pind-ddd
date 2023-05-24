@@ -14,8 +14,9 @@ export const DataTable = observer(
         const tableModel = tableModelRef.value
         const { columns } = tableModel
         return columns.map((column) => {
-          const { render, key, title, slots, type, enums, ...columnProps } = column
-
+          const { render, key, title, slots, type, enums, visible, ...columnProps } = column
+          console.log('visible', visible)
+          if (visible === false) return null
           const allSlots = {
             ...slots,
             default: ({ record, text, index }: any) => {

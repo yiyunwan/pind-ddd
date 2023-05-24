@@ -92,7 +92,7 @@ export class TableModel<
     this._columns = clone(columns)
   }
 
-  setColumn(column: Column<Row>, strategy: IFormMergeStrategy = 'merge') {
+  setColumn(column: Partial<Column<Row>>, strategy: IFormMergeStrategy = 'merge') {
     const _columns = this._columns
     if (Array.isArray(_columns) && typeof column === 'object') {
       const index = _columns.findIndex((item) => {
@@ -110,17 +110,17 @@ export class TableModel<
             _columns[index] = merge(old, column)
             break
           case 'shallowMerge':
-            _columns[index] = Object.assign(old, column)
+            _columns[index] = Object.assign(old, column) as any
             break
           case 'overwrite':
-            _columns[index] = column
+            _columns[index] = column as any
             break
         }
       } else {
-        _columns.push(column)
+        _columns.push(column as any)
       }
     }
-    this._columns = clone(column)
+    this._columns = clone(_columns)
   }
 
   get columns(): Columns<Row> {

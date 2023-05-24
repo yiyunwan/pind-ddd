@@ -26,32 +26,6 @@ export const SearchSchema: ISchema = {
         }
       },
       'x-content': '搜索'
-    },
-    add: {
-      type: 'void',
-      'x-decorator': 'FormItem',
-      'x-component': 'Button',
-      'x-component-props': {
-        type: 'primary',
-        onClick: '{{() => $table.toAdd()}}'
-      },
-      'x-content': '新增'
-    }
-  }
-}
-
-export const AddSchema: ISchema = {
-  type: 'object',
-  properties: {
-    name: {
-      type: 'string',
-      title: '姓名',
-      'x-decorator': 'FormItem',
-      'x-component': 'Input',
-      'x-component-props': {
-        placeholder: '请输入姓名'
-      },
-      required: true
     }
   }
 }

@@ -2,7 +2,7 @@ import { createTableModel, type StringifyColumns } from '@pind/ddd-core'
 import { CrudTable } from '@pind/ddd-vue'
 import { defineComponent } from 'vue'
 import type { FormatRow } from './type'
-import { AddSchema, SearchSchema } from './schema'
+import { SearchSchema } from './schema'
 import { search } from './mock'
 import { message } from 'ant-design-vue'
 
@@ -82,14 +82,7 @@ export const Format = defineComponent({
       }
     })
     return () => {
-      return (
-        <CrudTable
-          model={formatTable}
-          add={AddSchema}
-          search={SearchSchema}
-          edit={AddSchema}
-        ></CrudTable>
-      )
+      return <CrudTable model={formatTable} search={SearchSchema}></CrudTable>
     }
   }
 })

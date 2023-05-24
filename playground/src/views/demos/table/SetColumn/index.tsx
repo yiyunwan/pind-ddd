@@ -1,25 +1,50 @@
 import { createTableModel, type StringifyColumns } from '@pind/ddd-core'
 import { CrudTable } from '@pind/ddd-vue'
 import { defineComponent } from 'vue'
-import type { SetColumnRow } from './type'
-import { AddSchema, SearchSchema } from './schema'
-import { add, del, edit, search } from './mock'
-import { message, Modal } from 'ant-design-vue'
+import { SearchSchema } from './schema'
+import { search } from './mock'
+import { message } from 'ant-design-vue'
 
-const columns: StringifyColumns<SetColumnRow> = [
+const columns: StringifyColumns<any> = [
   {
     title: 'ID',
-    key: 'id'
+    key: 'id',
+    sortOrder: 'descend'
   },
   {
     title: '名称',
     key: 'name'
+  },
+  {
+    title: '照片',
+    key: 'photo',
+    type: 'image'
+  },
+  {
+    title: '出生日期',
+    key: 'birthday',
+    type: 'date'
+  },
+  {
+    title: '博客',
+    key: 'blog',
+    type: 'link'
+  },
+  {
+    title: '是否是老师',
+    key: 'isTeacher',
+    type: 'boolean'
+  },
+  {
+    title: '展示是否是老师',
+    key: 'showIsTeacher',
+    type: 'boolean'
   }
 ]
 
 export const SetColumn = defineComponent({
   setup() {
-    const formatTable = createTableModel(columns, {
+    const setColumnTable = createTableModel(columns, {
       onSearch: async (params, pagination) => {
         const { code, data, msg } = await search({
           ...params,
@@ -30,58 +55,19 @@ export const SetColumn = defineComponent({
           message.error(msg)
           return
         }
+        if (data && data.list) {
+          const showIsTeacher = data.list.some((item: any) => item.showIsTeacher)
+          setColumnTable.setColumn({
+            key: 'showIsTeacher',
+            visible: showIsTeacher
+          })
+        }
         return data
       },
-      onAdd: async (params) => {
-        const { code, msg } = await add(params)
-        if (code !== 200) {
-          message.error(msg)
-          return
-        }
-        return true
-      },
-      onEdit: async (params) => {
-        const { code, msg } = await edit(params)
-        if (code !== 200) {
-          message.error(msg)
-          return
-        }
-        return true
-      },
-      onDelete: async (row) => {
-        return new Promise<boolean>((resolve) => {
-          Modal.confirm({
-            title: '提示',
-            content: '确定删除吗？',
-            onOk: async () => {
-              try {
-                const { code, msg } = await del(row.id)
-                if (code !== 200) {
-                  message.error(msg)
-                  resolve(false)
-                  return
-                }
-                resolve(true)
-              } catch {
-                resolve(false)
-              }
-            },
-            onCancel: () => {
-              resolve(false)
-            }
-          })
-        })
-      }
+      excludes: ['delete', 'edit']
     })
     return () => {
-      return (
-        <CrudTable
-          model={formatTable}
-          add={AddSchema}
-          search={SearchSchema}
-          edit={AddSchema}
-        ></CrudTable>
-      )
+      return <CrudTable model={setColumnTable} search={SearchSchema}></CrudTable>
     }
   }
 })

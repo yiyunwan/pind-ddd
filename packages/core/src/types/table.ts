@@ -10,6 +10,7 @@ export type Options = Option[]
 export interface Column<T = any> {
   title: any
   key: string
+  visible?: boolean
   type?:
     | 'text'
     | 'link'
