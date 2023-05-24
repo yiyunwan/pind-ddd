@@ -23,7 +23,7 @@ export interface TableValues<Row, SearchParams, AddParams = Row, EditParams = Ad
 
 export interface TableOptions<
   Row extends object,
-  SearchParams extends object = object,
+  SearchParams extends object = Partial<Row>,
   AddParams extends object = Row,
   EditParams extends object = AddParams
 > {
@@ -64,7 +64,7 @@ export interface ActionContext {
 
 export class TableModel<
   Row extends object = any,
-  SearchParams extends object = any,
+  SearchParams extends object = Partial<Row>,
   AddParams extends object = Row,
   EditParams extends object = AddParams
 > {
@@ -385,7 +385,7 @@ export class TableModel<
 
 export function createTableModel<
   Row extends object = any,
-  SearchParams extends object = any,
+  SearchParams extends object = Partial<Row>,
   AddParams extends object = Row,
   EditParams extends object = AddParams
 >(
