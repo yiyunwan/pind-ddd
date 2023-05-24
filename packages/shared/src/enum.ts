@@ -1,10 +1,10 @@
-export interface Option<T extends object> extends Record<string, any> {
+export interface Option<T extends object = any> extends Record<string, any> {
   label: string
   key: keyof T
   value: T[keyof T]
 }
 
-export type Options<T extends object> = Option<T>[]
+export type Options<T extends object = any> = Option<T>[]
 
 export interface Description {
   label: string

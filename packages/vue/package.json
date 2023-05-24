@@ -16,6 +16,7 @@
     "@formily/vue": "^2.2.0",
     "@formily/shared": "^2.2.0",
     "ant-design-vue": "^3.2.20",
-    "@pind/ddd-core": "0.0.1"
+    "@pind/ddd-core": "0.0.1",
+    "dayjs": "^1.10.6"
   }
 }

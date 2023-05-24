@@ -2,6 +2,7 @@ import { Button, Table, TableColumn } from 'ant-design-vue'
 import { defineComponent } from 'vue'
 import { useTableModel } from '../../hooks'
 import { observer } from '@formily/reactive-vue'
+import dayjs from 'dayjs'
 
 export const DataTable = observer(
   defineComponent({
@@ -13,7 +14,7 @@ export const DataTable = observer(
         const tableModel = tableModelRef.value
         const { columns } = tableModel
         return columns.map((column) => {
-          const { render, key, title, slots, ...columnProps } = column
+          const { render, key, title, slots, type, enums, ...columnProps } = column
 
           const allSlots = {
             ...slots,
@@ -21,7 +22,35 @@ export const DataTable = observer(
               if (typeof render === 'function') return render(text, record, index)
 
               if (!render) {
-                return <span>{record[key]}</span>
+                let result = record[key]
+                if (type === 'enum') {
+                  const item = enums?.find((item) => item.value === result)
+                  if (item) result = item.label
+                } else if (type === 'boolean') {
+                  result = result ? '是' : '否'
+                } else if (type === 'date') {
+                  result = dayjs(result).format('YYYY-MM-DD')
+                } else if (type === 'datetime') {
+                  result = dayjs(result).format('YYYY-MM-DD HH:mm:ss')
+                } else if (type === 'percent') {
+                  result = `${result}%`
+                } else if (type === 'money') {
+                  result = `¥${result}`
+                } else if (type === 'image') {
+                  result = <img src={result} style={{ width: '100px' }} />
+                } else if (type === 'html') {
+                  result = <div innerHTML={result}></div>
+                } else if (type === 'json') {
+                  result = <pre>{JSON.stringify(result, null, 2)}</pre>
+                } else if (type === 'link') {
+                  result = (
+                    <a href={result} target="__blank">
+                      {result}
+                    </a>
+                  )
+                }
+
+                return <span>{result}</span>
               }
             }
           }
@@ -39,22 +68,22 @@ export const DataTable = observer(
         return (
           <TableColumn key="_action" title="操作">
             {{
-              default: ({ row, $index }: any) => {
+              default: ({ record, index }: any) => {
                 const { actions } = tableModel
 
-                return actions.map((action) => {
+                const nodes = actions.map((action) => {
                   const { render, onClick, auth, text, type, props } = action
-                  if (typeof auth === 'function' && auth(row) === false) return null
+                  if (typeof auth === 'function' && auth(record) === false) return null
                   const actionProps = {
                     ...props,
                     onClick: () => {
                       if (typeof onClick === 'function') {
-                        onClick(row, $index)
+                        onClick(record, index)
                       }
                     }
                   }
                   if (typeof render === 'function') {
-                    return render(row, $index)
+                    return render(record, index)
                   }
                   return (
                     <Button type="link" {...actionProps} key={type}>
@@ -62,6 +91,8 @@ export const DataTable = observer(
                     </Button>
                   )
                 })
+
+                return <span>{nodes}</span>
               }
             }}
           </TableColumn>
