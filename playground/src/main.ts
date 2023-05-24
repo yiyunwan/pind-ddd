@@ -1,5 +1,5 @@
 import { createApp } from 'vue'
-import 'element-plus/theme-chalk/src/index.scss'
+import 'ant-design-vue/dist/antd.less'
 
 import App from './App.vue'
 import router from './router'

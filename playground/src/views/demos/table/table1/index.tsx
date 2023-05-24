@@ -4,8 +4,7 @@ import { defineComponent } from 'vue'
 import type { Table1Row } from './type'
 import { AddSchema, SearchSchema } from './schema'
 import { add, del, edit, search } from './mock'
-
-import { ElMessage, ElMessageBox } from 'element-plus'
+import { message, Modal } from 'ant-design-vue'
 
 const columns: StringifyColumns<Table1Row> = [
   {
@@ -28,7 +27,7 @@ export const Table1 = defineComponent({
           pageSize: pagination.pageSize
         })
         if (code !== 200) {
-          ElMessage.error(msg)
+          message.error(msg)
           return
         }
         return data
@@ -36,7 +35,7 @@ export const Table1 = defineComponent({
       onAdd: async (params) => {
         const { code, msg } = await add(params)
         if (code !== 200) {
-          ElMessage.error(msg)
+          message.error(msg)
           return
         }
         return true
@@ -44,23 +43,34 @@ export const Table1 = defineComponent({
       onEdit: async (params) => {
         const { code, msg } = await edit(params)
         if (code !== 200) {
-          ElMessage.error(msg)
+          message.error(msg)
           return
         }
         return true
       },
       onDelete: async (row) => {
-        await ElMessageBox.confirm(`确定删除${row.name}?`, 'Warning', {
-          confirmButtonText: '删除',
-          cancelButtonText: '取消',
-          type: 'warning'
+        return new Promise<boolean>((resolve) => {
+          Modal.confirm({
+            title: '提示',
+            content: '确定删除吗？',
+            onOk: async () => {
+              try {
+                const { code, msg } = await del(row.id)
+                if (code !== 200) {
+                  message.error(msg)
+                  resolve(false)
+                  return
+                }
+                resolve(true)
+              } catch {
+                resolve(false)
+              }
+            },
+            onCancel: () => {
+              resolve(false)
+            }
+          })
         })
-        const { code, msg } = await del(row.id)
-        if (code !== 200) {
-          ElMessage.error(msg)
-          return
-        }
-        return true
       }
     })
     return () => {

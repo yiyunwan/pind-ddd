@@ -1,11 +1,10 @@
 import { ISchema } from '@formily/vue'
 import { TableModel } from '@pind/ddd-core'
-import { PropType, computed, defineComponent, provide } from 'vue'
+import { PropType, computed, defineComponent, onMounted, provide } from 'vue'
 import { TableInjectionKey } from '../../contexts'
 import { AddForm, EditForm, SearchForm } from './Forms'
 import { DataTable } from './Table'
-import './style.scss'
-import { Pagination } from './Pagination'
+import './style.less'
 import { observer } from '@formily/reactive-vue'
 
 export const CrudTable = observer(
@@ -30,6 +29,10 @@ export const CrudTable = observer(
       },
       scope: {
         type: Object as PropType<any>
+      },
+      initSearch: {
+        type: Boolean,
+        default: true
       }
     },
     setup(props) {
@@ -38,12 +41,17 @@ export const CrudTable = observer(
         computed(() => props.model)
       )
 
+      onMounted(() => {
+        if (props.initSearch) {
+          props.model.search()
+        }
+      })
+
       return () => {
         return (
           <ProvideTable model={props.model}>
             <SearchForm schema={props.search} components={props.components} scope={props.scope} />
             <DataTable />
-            <Pagination />
             <AddForm schema={props.add} components={props.components} scope={props.scope} />
             <EditForm schema={props.edit} components={props.components} scope={props.scope} />
           </ProvideTable>

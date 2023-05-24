@@ -1,4 +1,4 @@
-import { ElButton, ElTable, ElTableColumn } from 'element-plus'
+import { Button, Table, TableColumn } from 'ant-design-vue'
 import { defineComponent } from 'vue'
 import { useTableModel } from '../../hooks'
 import { observer } from '@formily/reactive-vue'
@@ -17,22 +17,19 @@ export const DataTable = observer(
 
           const allSlots = {
             ...slots,
-            default: ({ row, column, $index }: any) => {
-              if (typeof slots?.default === 'function') {
-                return slots.default({ row, column, $index })
-              }
-              if (typeof render === 'function') return render(column, row, $index)
+            default: ({ record, text, index }: any) => {
+              if (typeof render === 'function') return render(text, record, index)
 
               if (!render) {
-                return <span>{row[key]}</span>
+                return <span>{record[key]}</span>
               }
             }
           }
 
           return (
-            <ElTableColumn prop={key} label={title} {...columnProps}>
+            <TableColumn key={key} title={title} {...columnProps}>
               {allSlots}
-            </ElTableColumn>
+            </TableColumn>
           )
         })
       }
@@ -40,7 +37,7 @@ export const DataTable = observer(
       function renderActions() {
         const tableModel = tableModelRef.value
         return (
-          <ElTableColumn prop="_action" label="操作">
+          <TableColumn key="_action" title="操作">
             {{
               default: ({ row, $index }: any) => {
                 const { actions } = tableModel
@@ -60,24 +57,40 @@ export const DataTable = observer(
                     return render(row, $index)
                   }
                   return (
-                    <ElButton link type="primary" {...actionProps} key={type}>
+                    <Button type="link" {...actionProps} key={type}>
                       {text}
-                    </ElButton>
+                    </Button>
                   )
                 })
               }
             }}
-          </ElTableColumn>
+          </TableColumn>
         )
       }
 
       return () => {
         const tableModel = tableModelRef.value
+        const { pagination } = tableModel
+        const { page, onChange, ..._pagination } = pagination
         return (
-          <ElTable data={tableModel.list.slice()}>
+          <Table
+            dataSource={tableModel.list.slice()}
+            pagination={{
+              current: page,
+              ..._pagination,
+              onChange: (page, pageSize) => {
+                tableModel.setPagination({
+                  page,
+                  pageSize
+                })
+                tableModel.search()
+                onChange?.(page, pageSize)
+              }
+            }}
+          >
             {renderColumns()}
             {renderActions()}
-          </ElTable>
+          </Table>
         )
       }
     }

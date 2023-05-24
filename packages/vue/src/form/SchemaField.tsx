@@ -1,8 +1,9 @@
 import { Form, createForm } from '@formily/core'
-import { Form as ElForm, FormLayoutProps } from '@formily/element-plus'
+import { Form as AntForm, FormLayoutProps } from '@formily/antdv-x3'
 import { ISchema, createSchemaField } from '@formily/vue'
 import * as components from './components'
 import { PropType, computed, defineComponent } from 'vue'
+import './style.less'
 
 export const { SchemaField } = createSchemaField({
   components: {
@@ -38,11 +39,14 @@ export const SchemaForm = defineComponent({
     const formRef = computed(() => {
       return props.form || createForm()
     })
+    function onSubmit() {
+      console.log('onSubmit')
+    }
     return () => {
       return (
-        <ElForm {...props.layout} form={formRef.value} onAutoSubmit={props.onSubmit}>
+        <AntForm {...props.layout} form={formRef.value} onAutoSubmit={onSubmit}>
           <SchemaField schema={props.schema} scope={props.scope} components={props.components} />
-        </ElForm>
+        </AntForm>
       )
     }
   }

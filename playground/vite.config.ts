@@ -35,5 +35,15 @@ export default defineConfig({
       '@': fileURLToPath(new URL('./src', import.meta.url)),
       ...getWorkspaceAlias()
     }
+  },
+  css: {
+    preprocessorOptions: {
+      less: {
+        javascriptEnabled: true
+      }
+    }
+  },
+  server: {
+    host: true
   }
 })

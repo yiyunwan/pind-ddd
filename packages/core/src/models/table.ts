@@ -227,14 +227,16 @@ export class TableModel<
 
   setPagination(pagination: Partial<Pagination> = {}) {
     this.pagination = {
-      total: 0,
-      page: 1,
-      pageSize: 10,
+      ...this.pagination,
       ...pagination
     }
   }
 
-  pagination: Pagination
+  pagination: Pagination = {
+    total: 0,
+    page: 1,
+    pageSize: 10
+  }
 
   /** ---表格模型增相关逻辑 START--- */
   /**
@@ -329,6 +331,13 @@ export class TableModel<
    * 正在搜索
    */
   searching = false
+
+  toSearch() {
+    this.setPagination({
+      page: 1
+    }) // 重置分页
+    this.search()
+  }
 
   search = async () => {
     const { onSearch } = this.options

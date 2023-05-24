@@ -2,7 +2,7 @@ import { PropType, computed, defineComponent } from 'vue'
 import { SchemaForm, SchemaFormProps } from '../../form'
 import { useTableModel } from '../../hooks'
 import { observer } from '@formily/reactive-vue'
-import { ElButton, ElDrawer } from 'element-plus'
+import { Button, Drawer } from 'ant-design-vue'
 
 export const props = SchemaFormProps
 
@@ -39,9 +39,12 @@ export const SearchForm = observer(
       })
       const onSubmit = async () => {
         const model = modelRef.value
-        console.log('submit')
+        console.log('model', model)
         await formRef.value.submit()
-        console.log('submit')
+
+        model.setPagination({
+          page: 1
+        }) // 重置分页
         model.search()
       }
 
@@ -53,7 +56,7 @@ export const SearchForm = observer(
             onSubmit={onSubmit}
             layout={{
               labelWidth: 120,
-              wrapperWidth: 200,
+              layout: 'inline',
               ...props.layout
             }}
           >
@@ -92,10 +95,10 @@ export const DrawerFooter = observer(
         const loading = props.type === 'add' ? model.adding : model.editing
         return (
           <div class="flex justify-end">
-            <ElButton onClick={onCancel}>取消</ElButton>
-            <ElButton type="primary" onClick={props.onSubmit} loading={loading}>
+            <Button onClick={onCancel}>取消</Button>
+            <Button type="primary" onClick={props.onSubmit} loading={loading}>
               保存
-            </ElButton>
+            </Button>
           </div>
         )
       }
@@ -122,7 +125,7 @@ export const DrawerForm = observer(
         return <DrawerFooter onSubmit={props.onSubmit} type={props.type}></DrawerFooter>
       }
 
-      const onClosed = () => {
+      const onClose = () => {
         const model = modelRef.value
         if (props.type === 'add') {
           model.isAdding = false
@@ -133,12 +136,12 @@ export const DrawerForm = observer(
 
       return () => {
         const model = modelRef.value
-        const open = props.type === 'add' ? model.isAdding : model.isEditing
+        const visible = props.type === 'add' ? model.isAdding : model.isEditing
 
         return (
-          <ElDrawer modelValue={open} onClosed={onClosed}>
+          <Drawer visible={visible} onClose={onClose}>
             {{ footer: renderFooter, ...slots }}
-          </ElDrawer>
+          </Drawer>
         )
       }
     }
@@ -158,6 +161,7 @@ export const AddForm = observer(
         const model = modelRef.value
         await formRef.value.submit()
         props.onSubmit?.(formRef.value.values)
+        console.log('onSubmit', formRef.value.values)
         model.add()
       }
 

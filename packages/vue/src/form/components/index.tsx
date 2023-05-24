@@ -7,6 +7,6 @@ export {
   TimePicker,
   Radio,
   Checkbox
-} from '@formily/element-plus'
+} from '@formily/antdv-x3'
 
-export { ElButton as Button } from 'element-plus'
+export { Button } from 'ant-design-vue'

@@ -36,7 +36,7 @@
     // Added again here in case some users decide to disable `strict`.
     // This enables stricter inference for data properties on `this`.
     "noImplicitThis": true,
-    // "strict": true,
+    "strict": true,
 
     // <https://devblogs.microsoft.com/typescript/announcing-typescript-5-0/#verbatimmodulesyntax>
     // Any imports or exports without a type modifier are left around. This is important for `<script setup>`.

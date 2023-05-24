@@ -15,10 +15,15 @@ export const SearchSchema: ISchema = {
     search: {
       type: 'void',
       'x-decorator': 'FormItem',
-      'x-component': 'Submit',
+      'x-component': 'Button',
       'x-component-props': {
         type: 'primary',
-        loading: '{{ $table.searching }}'
+        loading: '{{ $table.searching }}',
+        onClick: '{{() => $table.toSearch()}}',
+        style: {
+          marginLeft: '10px',
+          marginRight: '10px'
+        }
       },
       'x-content': '搜索'
     },
