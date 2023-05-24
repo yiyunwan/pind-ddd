@@ -1,12 +1,12 @@
 import { createTableModel, type StringifyColumns } from '@pind/ddd-core'
 import { CrudTable } from '@pind/ddd-vue'
 import { defineComponent } from 'vue'
-import type { Table1Row } from './type'
+import type { CrudRow } from './type'
 import { AddSchema, SearchSchema } from './schema'
 import { add, del, edit, search } from './mock'
 import { message, Modal } from 'ant-design-vue'
 
-const columns: StringifyColumns<Table1Row> = [
+const columns: StringifyColumns<CrudRow> = [
   {
     title: 'ID',
     key: 'id'
@@ -17,7 +17,7 @@ const columns: StringifyColumns<Table1Row> = [
   }
 ]
 
-export const Table1 = defineComponent({
+export const Crud = defineComponent({
   setup() {
     const crudTable = createTableModel(columns, {
       onSearch: async (params, pagination) => {

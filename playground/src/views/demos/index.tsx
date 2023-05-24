@@ -1,19 +1,21 @@
 import { defineComponent } from 'vue'
-import { Table1 } from './table/table1'
+import { Crud } from './table/crud'
 import { TabPane, Tabs } from 'ant-design-vue'
+import { Format } from './table/format'
+import { SetColumn } from './table/SetColumn'
 export default defineComponent({
   setup() {
     return () => {
       return (
         <Tabs>
           <TabPane key={1} tab="增删改查">
-            <Table1></Table1>
+            <Crud></Crud>
           </TabPane>
           <TabPane key={2} tab="格式化">
-            <Table1></Table1>
+            <Format></Format>
           </TabPane>
           <TabPane key={3} tab="修改表头">
-            <Table1></Table1>
+            <SetColumn></SetColumn>
           </TabPane>
         </Tabs>
       )
