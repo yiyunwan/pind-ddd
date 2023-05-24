@@ -23,6 +23,7 @@
     "@pind/ddd-core": "0.0.1",
     "@pind/ddd-vue": "0.0.1",
     "ant-design-vue": "^3.2.20",
+    "mockjs": "^1.1.0",
     "vue": "^3.3.2",
     "vue-router": "^4.2.0"
   },

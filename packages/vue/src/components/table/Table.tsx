@@ -65,12 +65,12 @@ export const DataTable = observer(
 
       function renderActions() {
         const tableModel = tableModelRef.value
+        const { actions } = tableModel
+        if (!actions.length) return null
         return (
           <TableColumn key="_action" title="操作">
             {{
               default: ({ record, index }: any) => {
-                const { actions } = tableModel
-
                 const nodes = actions.map((action) => {
                   const { render, onClick, auth, text, type, props } = action
                   if (typeof auth === 'function' && auth(record) === false) return null

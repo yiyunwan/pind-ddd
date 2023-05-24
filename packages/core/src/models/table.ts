@@ -27,6 +27,8 @@ export interface TableOptions<
   AddParams extends object = Row,
   EditParams extends object = AddParams
 > {
+  includes?: string[]
+  excludes?: string[]
   pagination?: Partial<Pagination>
   actions?: Stringify<Actions<Row>>
   authMap?: Stringify<AuthMap<Row>>
@@ -163,7 +165,7 @@ export class TableModel<
         }
       }
     })
-    if (!hasDelAction) {
+    if (!hasDelAction && !this.options.excludes?.includes('delete')) {
       allActions.unshift({
         type: 'del',
         text: '删除',
@@ -175,7 +177,7 @@ export class TableModel<
         }
       })
     }
-    if (!hasEditAction) {
+    if (!hasEditAction && !this.options.excludes?.includes('edit')) {
       allActions.unshift({
         type: 'edit',
         text: '编辑',

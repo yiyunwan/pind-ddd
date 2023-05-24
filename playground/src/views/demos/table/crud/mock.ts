@@ -1,5 +1,5 @@
 import { sleep } from '@/utils'
-import type { Table1AddParams, Table1EditParams, Table1ListParams } from './type'
+import type { CrudAddParams, CrudEditParams, CrudListParams } from './type'
 
 const database = [
   {
@@ -14,7 +14,7 @@ const database = [
 
 let id = database.length + 1
 
-export async function add(data: Table1AddParams) {
+export async function add(data: CrudAddParams) {
   await sleep(1500)
   const { name } = data
   database.push({
@@ -28,7 +28,7 @@ export async function add(data: Table1AddParams) {
   }
 }
 
-export async function edit(data: Table1EditParams) {
+export async function edit(data: CrudEditParams) {
   await sleep(1500)
   const { id, name } = data
   const index = database.findIndex((item) => item.id === id)
@@ -67,7 +67,7 @@ export async function del(id: number) {
   }
 }
 
-export async function search(params: Table1ListParams) {
+export async function search(params: CrudListParams) {
   await sleep(1500)
   const { page = 1, pageSize = 10, name = '' } = params
   const list = database

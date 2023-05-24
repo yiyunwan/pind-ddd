@@ -3,8 +3,8 @@ import { CrudTable } from '@pind/ddd-vue'
 import { defineComponent } from 'vue'
 import type { FormatRow } from './type'
 import { AddSchema, SearchSchema } from './schema'
-import { add, del, edit, search } from './mock'
-import { message, Modal } from 'ant-design-vue'
+import { search } from './mock'
+import { message } from 'ant-design-vue'
 
 const columns: StringifyColumns<FormatRow> = [
   {
@@ -14,6 +14,26 @@ const columns: StringifyColumns<FormatRow> = [
   {
     title: '名称',
     key: 'name'
+  },
+  {
+    title: '照片',
+    key: 'photo',
+    type: 'image'
+  },
+  {
+    title: '出生日期',
+    key: 'birthday',
+    type: 'date'
+  },
+  {
+    title: '博客',
+    key: 'blog',
+    type: 'link'
+  },
+  {
+    title: '是否是老师',
+    key: 'isTeacher',
+    type: 'boolean'
   }
 ]
 
@@ -32,46 +52,7 @@ export const Format = defineComponent({
         }
         return data
       },
-      onAdd: async (params) => {
-        const { code, msg } = await add(params)
-        if (code !== 200) {
-          message.error(msg)
-          return
-        }
-        return true
-      },
-      onEdit: async (params) => {
-        const { code, msg } = await edit(params)
-        if (code !== 200) {
-          message.error(msg)
-          return
-        }
-        return true
-      },
-      onDelete: async (row) => {
-        return new Promise<boolean>((resolve) => {
-          Modal.confirm({
-            title: '提示',
-            content: '确定删除吗？',
-            onOk: async () => {
-              try {
-                const { code, msg } = await del(row.id)
-                if (code !== 200) {
-                  message.error(msg)
-                  resolve(false)
-                  return
-                }
-                resolve(true)
-              } catch {
-                resolve(false)
-              }
-            },
-            onCancel: () => {
-              resolve(false)
-            }
-          })
-        })
-      }
+      excludes: ['delete', 'edit']
     })
     return () => {
       return (
