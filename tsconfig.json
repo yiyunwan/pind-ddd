@@ -15,6 +15,7 @@
     "strictNullChecks": true,
     "downlevelIteration": true,
     "baseUrl": ".",
+    "rootDir": "./",
     "paths": {
       "@pind/ddd-*": ["./packages/*/src"]
     },

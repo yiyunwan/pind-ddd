@@ -7,7 +7,7 @@ import { add, del, edit, search } from './mock'
 
 import { ElMessage, ElMessageBox } from 'element-plus'
 
-const clomuns: StringifyColumns<Table1Row> = [
+const columns: StringifyColumns<Table1Row> = [
   {
     title: 'ID',
     key: 'id'
@@ -20,7 +20,7 @@ const clomuns: StringifyColumns<Table1Row> = [
 
 export const Table1 = defineComponent({
   setup() {
-    const crudTable = createTableModel(clomuns, {
+    const crudTable = createTableModel(columns, {
       onSearch: async (params, pagination) => {
         const { code, data, msg } = await search({
           ...params,

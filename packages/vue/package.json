@@ -3,6 +3,9 @@
   "version": "0.0.1",
   "description": "DDD Core",
   "scripts": {},
+  "module": "src/index.ts",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
   "dependencies": {
     "vue": "^3.3.0",
     "@formily/core": "^2.2.0",
