@@ -1,13 +1,36 @@
 import { IFormProps } from '@formily/core'
 import { Stringify } from '@formily/json-schema'
+
+export interface Option {
+  label: string
+  value: any
+}
+
+export type Options = Option[]
 export interface Column<T = any> {
   title: any
   key: string
+  type?:
+    | 'text'
+    | 'link'
+    | 'enum'
+    | 'date'
+    | 'datetime'
+    | 'currency'
+    | 'percent'
+    | 'money'
+    | 'image'
+    | 'html'
+    | 'json'
+    | 'boolean'
+    | (string & {})
+  enums?: Options | string
   render?: (text: any, record: T, index: number) => any | string
   [key: string]: any
 }
 
 export type Columns<T = any> = Column<T>[]
+
 export type StringifyColumns<T = any> = Stringify<Columns<T>>
 
 export interface SearchResult<T = any> {

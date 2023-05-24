@@ -24,8 +24,10 @@ export const DataTable = observer(
               if (!render) {
                 let result = record[key]
                 if (type === 'enum') {
-                  const item = enums?.find((item) => item.value === result)
-                  if (item) result = item.label
+                  if (Array.isArray(enums)) {
+                    const item = enums?.find((item) => item.value === result)
+                    if (item) result = item.label
+                  }
                 } else if (type === 'boolean') {
                   result = result ? '是' : '否'
                 } else if (type === 'date') {

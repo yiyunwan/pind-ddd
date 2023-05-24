@@ -1,6 +1,6 @@
 export interface Option<T extends object = any> extends Record<string, any> {
   label: string
-  key: keyof T
+  key?: keyof T
   value: T[keyof T]
 }
 

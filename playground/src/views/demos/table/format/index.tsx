@@ -9,7 +9,8 @@ import { message } from 'ant-design-vue'
 const columns: StringifyColumns<FormatRow> = [
   {
     title: 'ID',
-    key: 'id'
+    key: 'id',
+    sortOrder: 'descend'
   },
   {
     title: '名称',
@@ -34,6 +35,27 @@ const columns: StringifyColumns<FormatRow> = [
     title: '是否是老师',
     key: 'isTeacher',
     type: 'boolean'
+  },
+  {
+    title: '角色',
+    key: 'role',
+    type: 'enum',
+    enums: '{{$enum.roles}}'
+  }
+]
+
+const roles = [
+  {
+    label: '管理员',
+    value: 'admin'
+  },
+  {
+    label: '老师',
+    value: 'teacher'
+  },
+  {
+    label: '学生',
+    value: 'student'
   }
 ]
 
@@ -52,7 +74,12 @@ export const Format = defineComponent({
         }
         return data
       },
-      excludes: ['delete', 'edit']
+      excludes: ['delete', 'edit'],
+      scope: {
+        $enum: {
+          roles
+        }
+      }
     })
     return () => {
       return (

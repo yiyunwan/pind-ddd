@@ -29,6 +29,7 @@ export interface TableOptions<
 > {
   includes?: string[]
   excludes?: string[]
+  scope?: Record<string, any>
   pagination?: Partial<Pagination>
   actions?: Stringify<Actions<Row>>
   authMap?: Stringify<AuthMap<Row>>
@@ -365,6 +366,7 @@ export class TableModel<
     }
   >(source: Stringify<T>, scope = {}): T {
     return Schema.compile(source, {
+      ...this.options.scope,
       ...scope,
       $table: this
     })

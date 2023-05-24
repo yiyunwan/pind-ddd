@@ -8,7 +8,8 @@ const database = [
     photo: 'https://avatars.githubusercontent.com/u/499551?v=4',
     isTeacher: true,
     blog: 'http://www.baidu.com',
-    birthday: 1627661800000
+    birthday: 1627661800000,
+    role: 'admin'
   },
   {
     id: 2,
@@ -16,7 +17,8 @@ const database = [
     photo: 'https://avatars.githubusercontent.com/u/499549?v=4',
     isTeacher: false,
     blog: 'http://www.baidu.com',
-    birthday: 1627660800000
+    birthday: 1627660800000,
+    role: 'student'
   }
 ]
 
