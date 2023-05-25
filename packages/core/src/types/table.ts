@@ -25,7 +25,8 @@ export interface Column<T = any> {
     | 'json'
     | 'boolean'
     | (string & {})
-  enums?: Options | string
+  enums?: Options | Record<string, any> | ((text: any, record: T, index: number) => any) | string
+  color?: Options | Record<string, any> | ((text: any, record: T, index: number) => any) | string
   render?: (text: any, record: T, index: number) => any | string
   [key: string]: any
 }
