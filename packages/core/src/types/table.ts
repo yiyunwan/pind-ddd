@@ -123,7 +123,7 @@ export interface TableHooks<
 
   /**
    * @description 编辑事件完成的回调
-   * 返回 true 时，会自动刷新表格
+   * 返回 true 时，会自动刷新表格，且关闭弹窗
    * 返回 false 时，不会自动刷新表格, 也不会关闭弹窗，需要手动关闭
    */
   onEdit?: ActionFn<EditParams>

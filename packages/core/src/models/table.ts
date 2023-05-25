@@ -287,7 +287,7 @@ export class TableModel<
 
   /** ---表格模型【改】相关逻辑 START--- */
   /**
-   * 是否正在编辑
+   * 是否正在编辑, 一般用于弹窗等场景
    */
   isEditing = false
 
