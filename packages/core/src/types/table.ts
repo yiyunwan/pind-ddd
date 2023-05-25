@@ -7,6 +7,7 @@ export interface Option {
 }
 
 export type Options = Option[]
+
 export interface Column<T = any> {
   title: any
   key: string
@@ -33,7 +34,9 @@ export interface Column<T = any> {
 
 export type Columns<T = any> = Column<T>[]
 
-export type StringifyColumns<T = any> = Stringify<Columns<T>>
+export type StringifyColumn<T = any> = Stringify<Column<T>>
+
+export type StringifyColumns<T = any> = StringifyColumn<T>[]
 
 export interface SearchResult<T = any> {
   list: T[]
@@ -79,3 +82,59 @@ export type OnSearchFn<Params = any, Row = any> = (
 ) => Promise<SearchResult<Row> | false | undefined>
 
 export type ActionFn<Params = any> = (params: Params) => Promise<boolean | undefined>
+
+export type ActionType = 'add' | 'delete' | 'edit' | 'view' | 'custom' | (string & {})
+
+export interface TableOptions<
+  Row extends object = any,
+  SearchParams extends object = Partial<Row>,
+  AddParams extends object = Row,
+  EditParams extends object = AddParams
+> {
+  /**
+   * 是否使用操作按钮
+   */
+  excludes?: ActionType[] | ((action: ActionType) => boolean)
+  scope?: Record<string, any>
+  pagination?: Partial<Pagination>
+  actions?: Stringify<Actions<Row>>
+  authMap?: Stringify<AuthMap<Row>>
+  formProps?: FormProps<SearchParams, AddParams, EditParams>
+}
+
+export interface TableHooks<
+  Row extends object = any,
+  SearchParams extends object = Partial<Row>,
+  AddParams extends object = Row,
+  EditParams extends object = AddParams
+> {
+  /**
+   * @description 添加事件完成的回调
+   * 返回 true 时，会自动刷新表格
+   * 返回 false 时，不会自动刷新表格, 也不会关闭弹窗，需要手动关闭
+   */
+  onAdd?: ActionFn<AddParams>
+  /**
+   * @description 删除事件回调
+   * 返回 true 时，会自动刷新表格
+   * 返回 false 时，不会自动刷新表格, 可以设置 __deleting__ 字段来标记删除中
+   */
+  onDelete?: ActionFn<Row & ActionContext>
+
+  /**
+   * @description 编辑事件完成的回调
+   * 返回 true 时，会自动刷新表格
+   * 返回 false 时，不会自动刷新表格, 也不会关闭弹窗，需要手动关闭
+   */
+  onEdit?: ActionFn<EditParams>
+  /**
+   * 查
+   * @description 搜索事件按钮的回调
+   * 返回 false 时，不会自动刷新表格
+   */
+  onSearch?: OnSearchFn<SearchParams, Row>
+}
+
+export interface ActionContext {
+  ___deleting____?: boolean
+}

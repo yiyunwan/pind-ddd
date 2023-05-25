@@ -4,71 +4,17 @@ import { action, define, observable } from '@formily/reactive'
 import { clone, merge } from '@formily/shared'
 import {
   Action,
-  ActionFn,
+  ActionContext,
+  ActionType,
   Actions,
-  AuthMap,
   Column,
   Columns,
   FormProps,
-  OnSearchFn,
-  Pagination
+  Pagination,
+  StringifyColumns,
+  TableHooks,
+  TableOptions
 } from '../types'
-
-export type ActionType = 'add' | 'delete' | 'edit' | 'view' | 'custom' | (string & {})
-
-export interface TableOptions<
-  Row extends object = any,
-  SearchParams extends object = Partial<Row>,
-  AddParams extends object = Row,
-  EditParams extends object = AddParams
-> {
-  /**
-   * 是否使用操作按钮
-   */
-  excludes?: ActionType[] | ((action: ActionType) => boolean)
-  scope?: Record<string, any>
-  pagination?: Partial<Pagination>
-  actions?: Stringify<Actions<Row>>
-  authMap?: Stringify<AuthMap<Row>>
-  formProps?: FormProps<SearchParams, AddParams, EditParams>
-}
-
-export interface TableHooks<
-  Row extends object = any,
-  SearchParams extends object = Partial<Row>,
-  AddParams extends object = Row,
-  EditParams extends object = AddParams
-> {
-  /**
-   * @description 添加事件完成的回调
-   * 返回 true 时，会自动刷新表格
-   * 返回 false 时，不会自动刷新表格, 也不会关闭弹窗，需要手动关闭
-   */
-  onAdd?: ActionFn<AddParams>
-  /**
-   * @description 删除事件回调
-   * 返回 true 时，会自动刷新表格
-   * 返回 false 时，不会自动刷新表格, 可以设置 __deleting__ 字段来标记删除中
-   */
-  onDelete?: ActionFn<Row & ActionContext>
-
-  /**
-   * @description 编辑事件完成的回调
-   * 返回 true 时，会自动刷新表格
-   * 返回 false 时，不会自动刷新表格, 也不会关闭弹窗，需要手动关闭
-   */
-  onEdit?: ActionFn<EditParams>
-  /**
-   * 查
-   * @description 搜索事件按钮的回调
-   * 返回 false 时，不会自动刷新表格
-   */
-  onSearch?: OnSearchFn<SearchParams, Row>
-}
-
-export interface ActionContext {
-  ___deleting____?: boolean
-}
 
 export class TableModel<
   Row extends object = any,
@@ -83,10 +29,10 @@ export class TableModel<
   >
 > {
   options: TableOptions<Row, SearchParams, AddParams, EditParams> = {}
-  hooks: Hooks = {} as Hooks
+  hooks: Hooks
 
   constructor(
-    columns: Stringify<Columns<Row>> = [],
+    columns: StringifyColumns<Row> = [],
     hooks?: Hooks,
     options: TableOptions<Row, SearchParams, AddParams, EditParams> = {}
   ) {
@@ -94,10 +40,15 @@ export class TableModel<
     this.setHooks(hooks)
     this.setColumns(columns)
     this.setPagination(options.pagination)
-    this.searchForm = createForm(options.formProps?.search)
-    this.addForm = createForm(options.formProps?.add)
-    this.editForm = createForm(options.formProps?.edit)
+    this.createForm(options.formProps)
+
     this.makeObservable()
+  }
+
+  createForm(formProps?: FormProps<SearchParams, AddParams, EditParams>) {
+    this.searchForm = createForm(formProps?.search)
+    this.addForm = createForm(formProps?.add)
+    this.editForm = createForm(formProps?.edit)
   }
 
   setHooks(hooks?: Hooks) {
@@ -114,9 +65,9 @@ export class TableModel<
     }
   }
 
-  _columns?: Stringify<Columns<Row>>
+  _columns?: StringifyColumns<Row>
 
-  setColumns(columns: Stringify<Columns<Row>>) {
+  setColumns(columns: StringifyColumns<Row>) {
     this._columns = clone(columns)
   }
 
@@ -457,7 +408,7 @@ export function createTableModel<
     EditParams
   >
 >(
-  columns: Stringify<Columns<Row>> = [],
+  columns: StringifyColumns<Row> = [],
   hooks?: Hooks,
   options?: TableOptions<Row, SearchParams, AddParams, EditParams>
 ) {
