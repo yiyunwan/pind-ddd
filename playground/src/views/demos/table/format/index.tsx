@@ -61,26 +61,31 @@ const roles = [
 
 export const Format = defineComponent({
   setup() {
-    const formatTable = createTableModel(columns, {
-      onSearch: async (params, pagination) => {
-        const { code, data, msg } = await search({
-          ...params,
-          page: pagination.page,
-          pageSize: pagination.pageSize
-        })
-        if (code !== 200) {
-          message.error(msg)
-          return
+    const formatTable = createTableModel(
+      columns,
+      {
+        onSearch: async (params, pagination) => {
+          const { code, data, msg } = await search({
+            ...params,
+            page: pagination.page,
+            pageSize: pagination.pageSize
+          })
+          if (code !== 200) {
+            message.error(msg)
+            return
+          }
+          return data
         }
-        return data
       },
-      excludes: ['delete', 'edit'],
-      scope: {
-        $enum: {
-          roles
+      {
+        excludes: ['delete', 'edit'],
+        scope: {
+          $enum: {
+            roles
+          }
         }
       }
-    })
+    )
     return () => {
       return <CrudTable model={formatTable} search={SearchSchema}></CrudTable>
     }

@@ -14,26 +14,31 @@ import {
   Pagination
 } from '../types'
 
-export interface TableValues<Row, SearchParams, AddParams = Row, EditParams = AddParams> {
-  searchParams: SearchParams
-  list: Row[]
-  addParams: AddParams
-  editParams: EditParams
-}
+export type ActionType = 'add' | 'delete' | 'edit' | 'view' | 'custom' | (string & {})
 
 export interface TableOptions<
-  Row extends object,
+  Row extends object = any,
   SearchParams extends object = Partial<Row>,
   AddParams extends object = Row,
   EditParams extends object = AddParams
 > {
-  includes?: string[]
-  excludes?: string[]
+  /**
+   * 是否使用操作按钮
+   */
+  excludes?: ActionType[] | ((action: ActionType) => boolean)
   scope?: Record<string, any>
   pagination?: Partial<Pagination>
   actions?: Stringify<Actions<Row>>
   authMap?: Stringify<AuthMap<Row>>
   formProps?: FormProps<SearchParams, AddParams, EditParams>
+}
+
+export interface TableHooks<
+  Row extends object = any,
+  SearchParams extends object = Partial<Row>,
+  AddParams extends object = Row,
+  EditParams extends object = AddParams
+> {
   /**
    * @description 添加事件完成的回调
    * 返回 true 时，会自动刷新表格
@@ -69,15 +74,24 @@ export class TableModel<
   Row extends object = any,
   SearchParams extends object = Partial<Row>,
   AddParams extends object = Row,
-  EditParams extends object = AddParams
+  EditParams extends object = AddParams,
+  Hooks extends TableHooks<Row, SearchParams, AddParams, EditParams> = TableHooks<
+    Row,
+    SearchParams,
+    AddParams,
+    EditParams
+  >
 > {
-  options: TableOptions<Row, SearchParams, AddParams, EditParams>
+  options: TableOptions<Row, SearchParams, AddParams, EditParams> = {}
+  hooks: Hooks = {} as Hooks
 
   constructor(
     columns: Stringify<Columns<Row>> = [],
+    hooks?: Hooks,
     options: TableOptions<Row, SearchParams, AddParams, EditParams> = {}
   ) {
-    this.options = options
+    this.setOptions(options)
+    this.setHooks(hooks)
     this.setColumns(columns)
     this.setPagination(options.pagination)
     this.searchForm = createForm(options.formProps?.search)
@@ -86,7 +100,21 @@ export class TableModel<
     this.makeObservable()
   }
 
-  private _columns?: Stringify<Columns<Row>>
+  setHooks(hooks?: Hooks) {
+    this.hooks = {
+      ...this.hooks,
+      ...hooks
+    }
+  }
+
+  setOptions(options: TableOptions<Row, SearchParams, AddParams, EditParams>) {
+    this.options = {
+      ...this.options,
+      ...options
+    }
+  }
+
+  _columns?: Stringify<Columns<Row>>
 
   setColumns(columns: Stringify<Columns<Row>>) {
     this._columns = clone(columns)
@@ -150,9 +178,20 @@ export class TableModel<
     return []
   }
 
+  useAction(action: ActionType) {
+    const { excludes } = this.options
+    if (typeof excludes === 'function') {
+      return !excludes(action)
+    }
+    if (Array.isArray(excludes)) {
+      return !excludes.includes(action)
+    }
+    return true
+  }
+
   get actions() {
     const actions = this.compile(this.options.actions || []) as Actions<Row>
-    const hasDelAction = actions.some((action) => action.type === 'del')
+    const hasDelAction = actions.some((action) => action.type === 'delete')
     const hasEditAction = actions.some((action) => action.type === 'edit')
     const allActions = actions.map<Action<Row>>((action) => {
       const { auth } = action
@@ -166,19 +205,19 @@ export class TableModel<
         }
       }
     })
-    if (!hasDelAction && !this.options.excludes?.includes('delete')) {
+    if (!hasDelAction && !this.useAction('delete')) {
       allActions.unshift({
-        type: 'del',
+        type: 'delete',
         text: '删除',
         auth: (row) => {
-          return this.auth('del', row)
+          return this.auth('delete', row)
         },
         onClick: (row) => {
           this.delete(row)
         }
       })
     }
-    if (!hasEditAction && !this.options.excludes?.includes('edit')) {
+    if (!hasEditAction && !this.useAction('edit')) {
       allActions.unshift({
         type: 'edit',
         text: '编辑',
@@ -200,7 +239,7 @@ export class TableModel<
     return this.compile(this.options.authMap || {})
   }
 
-  auth(type: string, record: Row) {
+  auth(type: ActionType, record: Row) {
     const auth = this.authMap[type]
     if (typeof auth === 'function') {
       return auth(record)
@@ -259,7 +298,7 @@ export class TableModel<
 
   async add() {
     if (this.adding) return
-    const { onAdd } = this.options
+    const { onAdd } = this.hooks
     if (typeof onAdd !== 'function') return
     try {
       this.adding = true
@@ -280,7 +319,7 @@ export class TableModel<
       __deleting__?: boolean
     }
   ) {
-    const { onDelete } = this.options
+    const { onDelete } = this.hooks
     if (row.__deleting__) return
     if (typeof onDelete !== 'function') return
     try {
@@ -313,7 +352,7 @@ export class TableModel<
 
   async edit() {
     if (this.editing) return
-    const { onEdit } = this.options
+    const { onEdit } = this.hooks
     if (typeof onEdit !== 'function') return
     try {
       const { editParams } = this
@@ -343,14 +382,13 @@ export class TableModel<
   }
 
   search = async () => {
-    const { onSearch } = this.options
+    const { onSearch } = this.hooks
     if (typeof onSearch === 'function') {
       try {
         this.searching = true
         const result = await onSearch(this.searchParams, this.pagination)
         if (!result) return
         const { list, pagination } = result
-        console.log('list', list)
         this.list = list
         this.setPagination(pagination)
       } finally {
@@ -391,7 +429,18 @@ export class TableModel<
       add: action.bound,
       delete: action.bound,
       toEdit: action.bound,
-      edit: action.bound
+      edit: action.bound,
+      hooks: observable,
+      authMap: observable.computed,
+      auth: action.bound,
+      searchParams: observable.computed,
+      addParams: observable.computed,
+      editParams: observable.computed,
+      actions: observable.computed,
+      toSearch: action.bound,
+      options: observable,
+      columns: observable.computed,
+      _columns: observable.ref
     })
   }
 }
@@ -400,10 +449,17 @@ export function createTableModel<
   Row extends object = any,
   SearchParams extends object = Partial<Row>,
   AddParams extends object = Row,
-  EditParams extends object = AddParams
+  EditParams extends object = AddParams,
+  Hooks extends TableHooks<Row, SearchParams, AddParams, EditParams> = TableHooks<
+    Row,
+    SearchParams,
+    AddParams,
+    EditParams
+  >
 >(
   columns: Stringify<Columns<Row>> = [],
-  options: TableOptions<Row, SearchParams, AddParams, EditParams> = {}
+  hooks?: Hooks,
+  options?: TableOptions<Row, SearchParams, AddParams, EditParams>
 ) {
-  return new TableModel(columns, options)
+  return new TableModel(columns, hooks, options)
 }

@@ -3,11 +3,13 @@ import { defineComponent } from 'vue'
 import { useTableModel } from '../../hooks'
 import { observer } from '@formily/reactive-vue'
 import dayjs from 'dayjs'
+import { tableProps } from 'ant-design-vue/es/table'
 
 export const DataTable = observer(
   defineComponent({
     name: 'DataTable',
-    setup() {
+    props: tableProps(),
+    setup(props) {
       const tableModelRef = useTableModel()
 
       function renderColumns() {
@@ -108,6 +110,7 @@ export const DataTable = observer(
         const { page, onChange, ..._pagination } = pagination
         return (
           <Table
+            {...props}
             dataSource={tableModel.list.slice()}
             pagination={{
               current: page,
@@ -121,6 +124,7 @@ export const DataTable = observer(
                 onChange?.(page, pageSize)
               }
             }}
+            loading={tableModel.searching}
           >
             {renderColumns()}
             {renderActions()}

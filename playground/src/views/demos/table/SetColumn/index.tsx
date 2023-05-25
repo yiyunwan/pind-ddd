@@ -44,28 +44,33 @@ const columns: StringifyColumns<any> = [
 
 export const SetColumn = defineComponent({
   setup() {
-    const setColumnTable = createTableModel(columns, {
-      onSearch: async (params, pagination) => {
-        const { code, data, msg } = await search({
-          ...params,
-          page: pagination.page,
-          pageSize: pagination.pageSize
-        })
-        if (code !== 200) {
-          message.error(msg)
-          return
-        }
-        if (data && data.list) {
-          const showIsTeacher = data.list.some((item: any) => item.showIsTeacher)
-          setColumnTable.setColumn({
-            key: 'showIsTeacher',
-            visible: showIsTeacher
+    const setColumnTable = createTableModel(
+      columns,
+      {
+        onSearch: async (params, pagination) => {
+          const { code, data, msg } = await search({
+            ...params,
+            page: pagination.page,
+            pageSize: pagination.pageSize
           })
+          if (code !== 200) {
+            message.error(msg)
+            return
+          }
+          if (data && data.list) {
+            const showIsTeacher = data.list.some((item: any) => item.showIsTeacher)
+            setColumnTable.setColumn({
+              key: 'showIsTeacher',
+              visible: showIsTeacher
+            })
+          }
+          return data
         }
-        return data
       },
-      excludes: ['delete', 'edit']
-    })
+      {
+        excludes: ['delete', 'edit']
+      }
+    )
     return () => {
       return <CrudTable model={setColumnTable} search={SearchSchema}></CrudTable>
     }

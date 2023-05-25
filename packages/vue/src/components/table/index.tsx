@@ -6,6 +6,7 @@ import { AddForm, EditForm, SearchForm } from './Forms'
 import { DataTable } from './Table'
 import './style.less'
 import { observer } from '@formily/reactive-vue'
+import { TableProps } from 'ant-design-vue'
 
 export const CrudTable = observer(
   defineComponent({
@@ -33,6 +34,10 @@ export const CrudTable = observer(
       initSearch: {
         type: Boolean,
         default: true
+      },
+      tableProps: {
+        type: Object as PropType<TableProps<any>>,
+        default: () => ({})
       }
     },
     setup(props) {
@@ -51,7 +56,7 @@ export const CrudTable = observer(
         return (
           <ProvideTable model={props.model}>
             <SearchForm schema={props.search} components={props.components} scope={props.scope} />
-            <DataTable />
+            <DataTable {...props.tableProps} />
             <AddForm schema={props.add} components={props.components} scope={props.scope} />
             <EditForm schema={props.edit} components={props.components} scope={props.scope} />
           </ProvideTable>
