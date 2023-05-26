@@ -1,4 +1,5 @@
 import { Column, FormatFn } from '@pind/ddd-core'
+import { Image } from 'ant-design-vue'
 
 export function formatColor(row: Record<string, any>, index: number, column: Column) {
   const { color, key } = column
@@ -25,7 +26,9 @@ export const formatLink: FormatFn = (value: any) => {
 }
 
 export const formatImage: FormatFn = (value: any) => {
-  return <img src={value} style={{ width: '100px', height: '100px', objectFit: 'contain' }} />
+  return (
+    <Image src={value} style={{ width: '100px', height: '100px', objectFit: 'contain' }} preview />
+  )
 }
 
 export const formatHtml: FormatFn = (value: any) => {
