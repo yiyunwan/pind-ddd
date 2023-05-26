@@ -1,5 +1,4 @@
 import { IFormProps } from '@formily/core'
-import { Stringify } from '@formily/json-schema'
 
 export interface Option {
   label: string
@@ -17,6 +16,7 @@ export type FormatType =
   | 'number'
   | 'boolean'
   | 'enum'
+  | 'image'
   | (string & {})
 
 export type ColumnFn<T = any> = (text: any, record: T, index: number, column: Column<T>) => any
@@ -33,6 +33,14 @@ export interface Column<T = any> {
   color?: Options | Record<string, any> | ColumnFn<T> | string
   render?: ColumnFn<T> | string
   [key: string]: any
+}
+
+export declare type Stringify<
+  P extends {
+    [key: string]: any
+  }
+> = {
+  [key in keyof P]?: P[key] | (string & {})
 }
 
 export type Columns<T = any> = Column<T>[]
@@ -103,7 +111,7 @@ export interface TableOptions<
   actions?: Stringify<Actions<Row>>
   authMap?: Stringify<AuthMap<Row>>
   formProps?: FormProps<SearchParams, AddParams, EditParams>
-  formats?: Record<string, FormatFn<Row>>
+  formats?: Formats
 }
 
 export interface TableHooks<
@@ -144,3 +152,5 @@ export interface ActionContext {
 }
 
 export type FormatFn<T = any> = (value: any, record: T, index: number, column: Column<T>) => any
+
+export type Formats = Partial<Record<FormatType, FormatFn>>

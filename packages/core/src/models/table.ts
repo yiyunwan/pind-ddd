@@ -22,6 +22,7 @@ import {
   FormProps,
   FormatFn,
   FormatType,
+  Formats,
   Pagination,
   StringifyColumns,
   TableHooks,
@@ -373,7 +374,7 @@ export class TableModel<
         return value
       }
     }
-    const format = this.options.formats?.[type] || TableModel.formatMap[type]
+    const format = this.options.formats?.[type] || TableModel.formats[type]
 
     if (typeof format === 'function') {
       return format(value, row, index, column)
@@ -428,7 +429,7 @@ export class TableModel<
     })
   }
 
-  static formatMap: Record<FormatType, FormatFn> = {
+  static formats: Formats = {
     date: formatDate,
     datetime: formatDateTime,
     time: formatTime,
@@ -440,21 +441,21 @@ export class TableModel<
   }
 
   static registerFormat(type: FormatType, format: FormatFn, override = false) {
-    const fn = TableModel.formatMap[type]
+    const fn = TableModel.formats[type]
     if (typeof fn === 'function') {
       if (override) {
-        TableModel.formatMap[type] = format
+        TableModel.formats[type] = format
       } else {
         console.warn(
           `[TableModel] format type ${type} has been registered, please use override mode to override it`
         )
       }
     } else {
-      TableModel.formatMap[type] = format
+      TableModel.formats[type] = format
     }
   }
 
-  static registerFormats(formats: Partial<Record<FormatType, FormatFn>>, override = false) {
+  static registerFormats(formats: Formats, override = false) {
     Object.keys(formats).forEach((type) => {
       const fn = formats[type as FormatType]
       if (typeof fn !== 'function') {

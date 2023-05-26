@@ -89,6 +89,10 @@ const columns: StringifyColumns<FormatRow> = [
   {
     title: '角色',
     key: 'role',
+    color: {
+      admin: 'red',
+      teacher: 'green'
+    },
     type: 'enum',
     enums: '{{$enum.roles}}'
   }
@@ -102,7 +106,7 @@ const formats: Record<string, FormatFn<FormatRow>> = {
 /**
  * 注册格式化函数, 也可以在全局注册
  */
-TableModel.registerFormats(formats)
+TableModel.registerFormats(formats, true)
 
 export const Format = defineComponent({
   setup() {
