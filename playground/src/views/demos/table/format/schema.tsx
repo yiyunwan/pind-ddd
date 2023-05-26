@@ -19,7 +19,7 @@ export const SearchSchema: ISchema = {
       'x-component-props': {
         type: 'primary',
         loading: '{{ $table.searching }}',
-        onClick: '{{() => $table.toSearch()}}',
+        onClick: '{{ $table.toSearch }}',
         style: {
           marginLeft: '10px',
           marginRight: '10px'

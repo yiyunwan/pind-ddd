@@ -61,7 +61,7 @@ export interface Pagination {
 }
 
 export interface Action<T> {
-  type: 'edit' | 'delete' | (string & {})
+  type: ActionType
   text: string
   onClick?: (record: T, index: number) => void
   render?: (record: T, index: number) => any

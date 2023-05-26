@@ -19,7 +19,7 @@ export const SearchSchema: ISchema = {
       'x-component-props': {
         type: 'primary',
         loading: '{{ $table.searching }}',
-        onClick: '{{() => $table.toSearch()}}',
+        onClick: '{{ $table.toSearch }}',
         style: {
           marginLeft: '10px',
           marginRight: '10px'
@@ -33,7 +33,7 @@ export const SearchSchema: ISchema = {
       'x-component': 'Button',
       'x-component-props': {
         type: 'primary',
-        onClick: '{{() => $table.toAdd()}}'
+        onClick: '{{ $table.toAdd }}'
       },
       'x-content': '新增'
     }

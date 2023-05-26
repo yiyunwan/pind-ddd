@@ -51,7 +51,7 @@ export const DataTable = observer(
         const { actions } = tableModel
         if (!actions.length) return null
         return (
-          <TableColumn key="_action" title="操作">
+          <TableColumn key="_action" title="操作" width={actions.length * 100}>
             {{
               default: ({ record, index }: any) => {
                 const nodes = actions.map((action) => {

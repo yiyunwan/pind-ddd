@@ -255,7 +255,7 @@ export class TableModel<
    */
   adding = false
 
-  toAdd() {
+  toAdd = () => {
     this.isAdding = true
     this.addForm.reset()
   }
@@ -304,7 +304,7 @@ export class TableModel<
    */
   isEditing = false
 
-  toEdit(row: Row) {
+  toEdit = (row: Row) => {
     this.isEditing = true
     this.editForm.setValues(row)
   }
@@ -338,7 +338,7 @@ export class TableModel<
    */
   searching = false
 
-  toSearch() {
+  toSearch = () => {
     this.setPagination({
       page: 1
     }) // 重置分页
