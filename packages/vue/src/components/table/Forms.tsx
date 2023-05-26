@@ -94,9 +94,9 @@ export const DrawerFooter = observer(
         const model = modelRef.value
         const loading = props.type === 'add' ? model.adding : model.editing
         return (
-          <div class="flex justify-end">
+          <div class="flex justify-center">
             <Button onClick={onCancel}>取消</Button>
-            <Button type="primary" onClick={props.onSubmit} loading={loading}>
+            <Button type="primary" onClick={props.onSubmit} loading={loading} class="ml-4">
               保存
             </Button>
           </div>
