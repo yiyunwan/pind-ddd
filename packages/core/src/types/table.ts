@@ -8,27 +8,30 @@ export interface Option {
 
 export type Options = Option[]
 
+export type FormatType =
+  | 'date'
+  | 'datetime'
+  | 'time'
+  | 'money'
+  | 'percent'
+  | 'number'
+  | 'boolean'
+  | 'enum'
+  | (string & {})
+
+export type ColumnFn<T = any> = (text: any, record: T, index: number, column: Column<T>) => any
+
 export interface Column<T = any> {
   title: any
   key: string
   visible?: boolean
-  type?:
-    | 'text'
-    | 'link'
-    | 'enum'
-    | 'date'
-    | 'datetime'
-    | 'currency'
-    | 'percent'
-    | 'money'
-    | 'image'
-    | 'html'
-    | 'json'
-    | 'boolean'
-    | (string & {})
-  enums?: Options | Record<string, any> | ((text: any, record: T, index: number) => any) | string
-  color?: Options | Record<string, any> | ((text: any, record: T, index: number) => any) | string
-  render?: (text: any, record: T, index: number) => any | string
+  type?: FormatType
+  /**
+   * 当传入enums时，type 若未设置则默认为enum
+   */
+  enums?: Options | Record<string, any> | ColumnFn<T> | string
+  color?: Options | Record<string, any> | ColumnFn<T> | string
+  render?: ColumnFn<T> | string
   [key: string]: any
 }
 
@@ -76,7 +79,7 @@ export interface FormProps<
   edit: IFormProps<EditParams>
 }
 
-export type OnSearchFn<Params = any, Row = any> = (
+export type OnSearchFn<Row = any, Params = Partial<Row>> = (
   params: Params,
   pagination: Pagination
 ) => Promise<SearchResult<Row> | false | undefined>
@@ -100,6 +103,7 @@ export interface TableOptions<
   actions?: Stringify<Actions<Row>>
   authMap?: Stringify<AuthMap<Row>>
   formProps?: FormProps<SearchParams, AddParams, EditParams>
+  formats?: Record<string, FormatFn<Row>>
 }
 
 export interface TableHooks<
@@ -132,9 +136,11 @@ export interface TableHooks<
    * @description 搜索事件按钮的回调
    * 返回 false 时，不会自动刷新表格
    */
-  onSearch?: OnSearchFn<SearchParams, Row>
+  onSearch?: OnSearchFn<Row, SearchParams>
 }
 
 export interface ActionContext {
   ___deleting____?: boolean
 }
+
+export type FormatFn<T = any> = (value: any, record: T, index: number, column: Column<T>) => any

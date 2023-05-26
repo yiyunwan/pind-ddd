@@ -1,12 +1,20 @@
+import { observer } from '@formily/reactive-vue'
 import { ISchema } from '@formily/vue'
 import { TableModel } from '@pind/ddd-core'
+import { TableProps } from 'ant-design-vue'
 import { PropType, computed, defineComponent, onMounted, provide } from 'vue'
 import { TableInjectionKey } from '../../contexts'
+import { formatHtml, formatImage, formatJson, formatLink } from '../../utils'
 import { AddForm, EditForm, SearchForm } from './Forms'
 import { DataTable } from './Table'
 import './style.less'
-import { observer } from '@formily/reactive-vue'
-import { TableProps } from 'ant-design-vue'
+
+TableModel.registerFormats({
+  link: formatLink,
+  image: formatImage,
+  html: formatHtml,
+  json: formatJson
+})
 
 export const CrudTable = observer(
   defineComponent({

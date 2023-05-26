@@ -6,6 +6,7 @@
     "@formily/core": "^2.2.0",
     "@formily/json-schema": "^2.2.0",
     "@formily/reactive": "^2.2.0",
-    "@formily/shared": "^2.2.0"
+    "@formily/shared": "^2.2.0",
+    "dayjs": "^1.10.4"
   }
 }

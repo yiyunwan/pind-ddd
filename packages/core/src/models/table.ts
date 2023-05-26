@@ -3,6 +3,16 @@ import { Schema, Stringify } from '@formily/json-schema'
 import { action, define, observable } from '@formily/reactive'
 import { clone, merge } from '@formily/shared'
 import {
+  formatBoolean,
+  formatDate,
+  formatDateTime,
+  formatEnum,
+  formatMoney,
+  formatNumber,
+  formatPercent,
+  formatTime
+} from '../shared'
+import {
   Action,
   ActionContext,
   ActionType,
@@ -10,6 +20,8 @@ import {
   Column,
   Columns,
   FormProps,
+  FormatFn,
+  FormatType,
   Pagination,
   StringifyColumns,
   TableHooks,
@@ -156,7 +168,7 @@ export class TableModel<
         }
       }
     })
-    if (!hasDelAction && !this.useAction('delete')) {
+    if (!hasDelAction && this.useAction('delete')) {
       allActions.unshift({
         type: 'delete',
         text: '删除',
@@ -168,7 +180,7 @@ export class TableModel<
         }
       })
     }
-    if (!hasEditAction && !this.useAction('edit')) {
+    if (!hasEditAction && this.useAction('edit')) {
       allActions.unshift({
         type: 'edit',
         text: '编辑',
@@ -349,6 +361,26 @@ export class TableModel<
   }
   /** ---表格模型【查】相关逻辑 END--- */
 
+  format(row: Row, index: number, column: Column<Row>) {
+    const { key, enums } = column
+    let type = column.type
+    const value = row[key]
+    if (!type) {
+      // 如果没有指定类型, 但是有枚举, 则使用枚举类型
+      if (enums) {
+        type = 'enum'
+      } else {
+        return value
+      }
+    }
+    const format = this.options.formats?.[type] || TableModel.formatMap[type]
+
+    if (typeof format === 'function') {
+      return format(value, row, index, column)
+    }
+    return value
+  }
+
   compile<
     T extends {
       [key: string]: any
@@ -391,7 +423,45 @@ export class TableModel<
       toSearch: action.bound,
       options: observable,
       columns: observable.computed,
-      _columns: observable.ref
+      _columns: observable.ref,
+      format: action.bound
+    })
+  }
+
+  static formatMap: Record<FormatType, FormatFn> = {
+    date: formatDate,
+    datetime: formatDateTime,
+    time: formatTime,
+    number: formatNumber,
+    boolean: formatBoolean,
+    money: formatMoney,
+    percent: formatPercent,
+    enum: formatEnum
+  }
+
+  static registerFormat(type: FormatType, format: FormatFn, override = false) {
+    const fn = TableModel.formatMap[type]
+    if (typeof fn === 'function') {
+      if (override) {
+        TableModel.formatMap[type] = format
+      } else {
+        console.warn(
+          `[TableModel] format type ${type} has been registered, please use override mode to override it`
+        )
+      }
+    } else {
+      TableModel.formatMap[type] = format
+    }
+  }
+
+  static registerFormats(formats: Partial<Record<FormatType, FormatFn>>, override = false) {
+    Object.keys(formats).forEach((type) => {
+      const fn = formats[type as FormatType]
+      if (typeof fn !== 'function') {
+        console.warn(`[TableModel] format type ${type} must be a function`)
+        return
+      }
+      TableModel.registerFormat(type as FormatType, fn, override)
     })
   }
 }

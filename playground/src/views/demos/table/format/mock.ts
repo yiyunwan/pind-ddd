@@ -9,6 +9,7 @@ const database = [
     isTeacher: true,
     blog: 'http://www.baidu.com',
     birthday: 1627661800000,
+    custom: 'aaa',
     role: 'admin'
   },
   {
@@ -18,6 +19,7 @@ const database = [
     isTeacher: false,
     blog: 'http://www.baidu.com',
     birthday: 1627660800000,
+    custom: 'bbb',
     role: 'student'
   }
 ]

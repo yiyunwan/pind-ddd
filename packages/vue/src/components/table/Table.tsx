@@ -2,8 +2,8 @@ import { Button, Table, TableColumn } from 'ant-design-vue'
 import { defineComponent } from 'vue'
 import { useTableModel } from '../../hooks'
 import { observer } from '@formily/reactive-vue'
-import dayjs from 'dayjs'
 import { tableProps } from 'ant-design-vue/es/table'
+import { formatColor } from '../../utils'
 
 export const DataTable = observer(
   defineComponent({
@@ -21,55 +21,17 @@ export const DataTable = observer(
           const allSlots = {
             ...slots,
             default: ({ record, text, index }: any) => {
-              if (typeof render === 'function') return render(text, record, index)
+              if (typeof render === 'function') return render(text, record, index, column)
               const style = {
                 color: ''
               }
               let result = record[key]
 
               if (color) {
-                if (Array.isArray(color)) {
-                  const item = color.find((item) => item.value === result)
-                  if (item) style.color = item.color || item.value
-                } else if (typeof color === 'function') {
-                  style.color = color(result, record, index)
-                } else if (typeof color === 'string') {
-                  style.color = color
-                } else if (typeof color === 'object') {
-                  style.color = color[result]
-                }
+                style.color = formatColor(record, index, column)
               }
-              if (type === 'enum') {
-                if (Array.isArray(enums)) {
-                  const item = enums?.find((item) => item.value === result)
-                  if (item) result = item.label
-                } else if (typeof enums === 'object') {
-                  result = enums[result]
-                } else if (typeof enums === 'function') {
-                  result = enums(result, record, index)
-                }
-              } else if (type === 'boolean') {
-                result = result ? '是' : '否'
-              } else if (type === 'date') {
-                result = dayjs(result).format('YYYY-MM-DD')
-              } else if (type === 'datetime') {
-                result = dayjs(result).format('YYYY-MM-DD HH:mm:ss')
-              } else if (type === 'percent') {
-                result = `${result}%`
-              } else if (type === 'money') {
-                result = `¥${result}`
-              } else if (type === 'image') {
-                result = <img src={result} style={{ width: '100px' }} />
-              } else if (type === 'html') {
-                result = <div innerHTML={result}></div>
-              } else if (type === 'json') {
-                result = <pre>{JSON.stringify(result, null, 2)}</pre>
-              } else if (type === 'link') {
-                result = (
-                  <a href={result} target="__blank">
-                    {result}
-                  </a>
-                )
+              if (type || enums) {
+                result = tableModel.format(record, index, column)
               }
 
               return <span style={style}>{result}</span>
