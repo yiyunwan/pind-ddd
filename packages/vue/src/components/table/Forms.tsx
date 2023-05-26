@@ -139,7 +139,7 @@ export const DrawerForm = observer(
         const visible = props.type === 'add' ? model.isAdding : model.isEditing
 
         return (
-          <Drawer visible={visible} onClose={onClose}>
+          <Drawer visible={visible} onClose={onClose} width={600}>
             {{ footer: renderFooter, ...slots }}
           </Drawer>
         )
